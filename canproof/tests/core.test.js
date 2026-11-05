@@ -260,3 +260,24 @@ test('Bitrate inference from back-to-back frames', () => {
   assert.ok(inf);
   assert.ok(inf.snapped === 500000 || inf.snapped === 800000, 'snapped ' + inf.snapped);
 });
+
+test('Synthetic trace (known ground truth): measurement + comparison behave as designed', () => {
+  const { run } = require('../tools/analyse_trace.js');
+  const out = run({ file: path.join(__dirname, '../data/synthetic/demo_vehicle.log'), dbc: path.join(__dirname, '../data/synthetic/demo_vehicle.dbc'), label: 'synthetic', excerpt: 0 });
+  assert.equal(out.bitrate, 500000, 'bitrate inferred from back-to-back frames');
+  // observed load (exact stuffing) must lie between best and worst case predictions
+  const L = out.comparison.load;
+  assert.ok(L.observed >= L.predictedBest && L.observed <= L.predictedWorst);
+  // measured periods match the DBC cycle times
+  const dbc = C.parseDBC(fs.readFileSync(path.join(__dirname, '../data/synthetic/demo_vehicle.dbc'), 'utf8'));
+  for (const x of out.ids) {
+    const m = dbc.messages.find((d) => d.id === x.id && d.extended === x.extended);
+    assert.ok(Math.abs(x.fitPeriodMs - m.cycleTimeMs) < 0.01 * m.cycleTimeMs, m.name);
+  }
+  // With J = measured spread, no disagreements; any J = 0 disagreement must be a message that HAS injected jitter
+  assert.equal(out.comparison.disagreementsJmeasured, 0);
+  for (const r of out.comparison.J0.filter((r) => r.status === 'DISAGREES')) {
+    const m = dbc.messages.find((d) => d.id === r.id);
+    assert.ok(m.jitterMs > 0, m.name + ' flagged but had no jitter');
+  }
+});
