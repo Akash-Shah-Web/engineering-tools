@@ -696,12 +696,12 @@
       stepQ(rq, yq) {                                          // BigInt Q16.16 in/out
         const e = sat32(rq - yq);
         const p = mulQ16(kb, rq) - mulQ16(kp, yq);
-        if (fc.hasD) st.d = sat32(mulQ16(ad, st.d) - mulQ16(bd, yq - st.yPrev));
+        if (fc.hasD) st.d = sat32(mulQ16(ad, st.d) - mulQ16(bd, sat32(yq - st.yPrev)));
         let v = p + rsh(st.i, 16) + st.d;
         v = sat32(v);
         const u = v > umax ? umax : v < umin ? umin : v;
         const di = rsh(ki.q * e, ki.f - 16);                    // Q32.32
-        if (fc.aw === 2) st.i += di + rsh(kt.q * (u - v), kt.f - 16);
+        if (fc.aw === 2) st.i += di + rsh(kt.q * sat32(u - v), kt.f - 16);
         else if (fc.aw === 1) { if (!((v > umax && di > 0n) || (v < umin && di < 0n))) st.i += di; }
         else st.i += di;
         st.yPrev = yq;
