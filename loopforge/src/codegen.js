@@ -12,12 +12,12 @@
 })(typeof self !== 'undefined' ? self : this, function (LF) {
   'use strict';
 
+  // Shortest decimal that round-trips to the same IEEE-754 double (exact, readable).
   const g17 = x => {
     if (!isFinite(x)) throw new Error('non-finite coefficient');
-    let s = Number(x).toPrecision(17);
-    s = s.replace(/(\.\d*?)0+(e|$)/, '$1$2').replace(/\.(e|$)/, '.0$1');
+    let s = String(Number(x));
     if (!/[.e]/.test(s)) s += '.0';
-    return s;
+    return s.replace(/e\+?/, 'e');
   };
   const fmt = (x, d) => (Math.abs(x) >= 1e5 || (Math.abs(x) < 1e-3 && x !== 0) ? x.toExponential(d) : x.toFixed(d));
 
