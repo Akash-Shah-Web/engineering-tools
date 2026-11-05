@@ -49,7 +49,7 @@
   function examples() { return [...(DATA.examples || []), DAVIS_EXAMPLE]; }
   function loadExample(ex) {
     S.ex = ex; S.edits = {}; S.selectedKey = null; closeDrawer();
-    S.dbc = ex.dbc ? C.parseDBC(ex.dbc) : null;
+    S.dbc = ex.dbc ? C.parseDBC(ex.dbc) : null; S.dbcText = ex.dbc || null;
     S.bitrate = ex.bitrate || (ex.summary && ex.summary.bitrate) || 500000;
     $('#bitrate').value = String(S.bitrate);
     if (S.dbc) S.baseSet = C.messageSetFromDBC(S.dbc);
@@ -231,7 +231,7 @@
   function renderBanner() {
     const ex = S.ex; const b = $('#banner');
     let html = '';
-    if (ex.label === 'synthetic') html = `<span class="chip synthetic">synthetic</span><div><b>Synthetic demo network.</b> ${esc(ex.description || '')} The real ROAD / CAN-Modes captures could not be downloaded in the build environment, so no measured example is bundled. Import your own DBC and candump/CSV log (or run <span class="mono">data/fetch.sh</span> and rebuild) for a measured comparison.</div>`;
+    if (ex.label === 'synthetic') html = `<span class="chip synthetic">synthetic</span><div><b>Synthetic demo network — generated, not measured.</b> Its trace comes from CANProof's own simulator, so agreement with the model is expected and is <b>not</b> validation. The ROAD / CAN-Modes captures could not be downloaded in the build environment, so no measured example is bundled. Import a DBC and candump/CSV log, or run <span class="mono">data/fetch.sh</span> and rebuild, for a measured comparison.</div>`;
     else if (ex.label === 'measured') html = `<span class="chip measured">measured</span><div><b>${esc(ex.title)}.</b> ${esc(ex.description || '')} Deadlines are <b>assumed</b> equal to the measured periods — the data does not provide them.</div>`;
     else html = `<span class="chip calculated">published</span><div>${esc(ex.description)}</div>`;
     if (S.method === 'tindell') html += `<div style="margin-left:auto"><span class="chip bad">unsafe method selected</span></div>`;
@@ -384,6 +384,8 @@
     const misses = new Set(S.analysis.results.filter((r) => !r.schedulable).map((r) => r.key));
     const rows = S.analysis.results.map((r) => ({ key: r.key, name: r.name, idHex: hex(r), miss: misses.has(r.key) }));
     const isTrace = S.source === 'trace' && S.traceFrames;
+    const box = $('#timeline'); const want = Math.round(Math.max(260, Math.min(900, 60 + rows.length * (box.clientWidth < 600 ? 11 : 13))));
+    if (Math.abs(box.clientHeight - want) > 2) box.style.height = want + 'px';
     timeline.draw({ frames, rows, t0, t1: t0 + W, playhead: S.playhead, selectedKey: S.selectedKey, hoverKey: S.hoverKey, maxLag: isTrace ? 0 : 3e7,
       note: isTrace ? 'Logged trace: only transmissions are observable — queuing and blocking are not.' : 'Simulated: synchronous release at t = 0 (critical-instant-like), random jitter within J, worst-case stuffing.',
       sourceLabel: isTrace ? S.traceLabel + ' trace' : 'simulated' });
@@ -452,6 +454,7 @@
       if (e.key === ' ') { e.preventDefault(); togglePlay(); } else if (e.key === 'Escape') { closeDrawer(); endTour(); }
     });
     $('#btnTour').addEventListener('click', startTour);
+    $('#banner').addEventListener('click', () => $('#banner').classList.toggle('open'));
     $$('#tour [data-t]').forEach((b) => b.addEventListener('click', () => tourGo(b.dataset.t)));
     window.addEventListener('resize', () => { clearTimeout(bind._r); bind._r = setTimeout(() => { renderCharts(); if (tour.on) tourShow(); }, 120); });
   }
@@ -488,7 +491,7 @@
       if (/\.dbc$/i.test(f.name) || /^\s*VERSION|BO_\s+\d+/m.test(text.slice(0, 5000))) {
         const dbc = C.parseDBC(text);
         if (!dbc.messages.length) { toast('No messages found in ' + esc(f.name)); continue; }
-        S.dbc = dbc; S.baseSet = C.messageSetFromDBC(dbc); S.edits = {}; rxCache.clear();
+        S.dbc = dbc; S.dbcText = text; S.baseSet = C.messageSetFromDBC(dbc); S.edits = {}; rxCache.clear();
         S.ex = { title: f.name, label: S.traceLabel === 'measured' ? 'measured' : 'measured', description: 'Imported DBC.', dbc: text, imported: true };
         S.ex.label = S.trace ? S.traceLabel : 'measured'; S.ex.labelNote = 'imported';
         setNodes(); toast(`Loaded ${dbc.messages.length} messages from ${esc(f.name)}`);
@@ -499,7 +502,7 @@
         const inf = C.inferBitrate(log.frames);
         if (inf && inf.snapped) { S.bitrate = inf.snapped; $('#bitrate').value = String(inf.snapped); if (![...$('#bitrate').options].some((o) => +o.value === inf.snapped)) { $('#bitrate').insertAdjacentHTML('beforeend', `<option value="${inf.snapped}">${inf.snapped / 1000} kbit/s</option>`); $('#bitrate').value = String(inf.snapped); } }
         const overlap = S.meas.ids.filter((x) => S.baseSet.some((m) => m.key === x.key)).length;
-        if (!S.dbc || overlap < 0.5 * S.meas.ids.length) { S.dbc = null; S.baseSet = C.messageSetFromTrace(S.meas); setNodes(); }
+        if (!S.dbc || overlap < 0.5 * S.meas.ids.length) { S.dbc = null; S.dbcText = null; S.baseSet = C.messageSetFromTrace(S.meas); setNodes(); }
         S.ex = { title: f.name, label: 'measured', description: `Imported capture (${log.frames.length.toLocaleString()} frames, format ${log.format}).`, summary: { provenance: { notes: ['Imported by the user; treated as measured.', 'Deadlines ASSUMED equal to measured periods unless a DBC provides them.', inf ? `Bitrate inferred: ${Math.round(inf.estimate)} bit/s → ${inf.snapped}` : 'Bitrate could not be inferred; check the selector.'] } } };
         toast(`Loaded ${log.frames.length.toLocaleString()} frames · ${S.meas.ids.length} IDs${inf ? ' · ' + inf.snapped / 1000 + ' kbit/s inferred' : ''}`);
       }
@@ -547,8 +550,8 @@
       return download(`${base}-comparison.csv`, csv(rows), 'text/csv');
     }
     if (x === 'dbc') {
-      if (!S.dbc || !S.ex.dbc) return toast('No DBC loaded.');
-      let t = S.ex.dbc.replace(/^BA_ "(GenMsgCycleTime|GenMsgDeadline|GenMsgJitter)" BO_ .*$\n?/gm, '');
+      if (!S.dbc || !S.dbcText) return toast('No DBC loaded.');
+      let t = S.dbcText.replace(/^BA_ "(GenMsgCycleTime|GenMsgDeadline|GenMsgJitter)" BO_ .*$\n?/gm, '');
       const defs = ['BA_DEF_ BO_ "GenMsgCycleTime" INT 0 65535;', 'BA_DEF_ BO_ "GenMsgDeadline" INT 0 65535;', 'BA_DEF_ BO_ "GenMsgJitter" FLOAT 0 1000;'].filter((d) => !t.includes(d.slice(0, 32)));
       const lines = S.baseSet.map((m) => { const e = Object.assign({}, m, S.edits[m.key] || {}); const raw = m.extended ? (m.id + 0x80000000) >>> 0 : m.id; return [`BA_ "GenMsgCycleTime" BO_ ${raw} ${Math.round(e.Tms)};`, /assumed/.test(m.source.D) && !(S.edits[m.key] || {}).Dms ? '' : `BA_ "GenMsgDeadline" BO_ ${raw} ${Math.round(e.Dms)};`, e.Jms ? `BA_ "GenMsgJitter" BO_ ${raw} ${e.Jms};` : ''].filter(Boolean).join('\n'); });
       t += '\n' + defs.join('\n') + '\n' + lines.join('\n') + '\n';
@@ -564,7 +567,7 @@
     { sel: '#pTimeline', t: 'Queuing, blocking, transmission', p: 'The timeline shows every frame: release, waiting behind a lower-priority frame already on the bus (blocking, amber), waiting for higher priorities (interference, violet), transmission, and the deadline tick. Hover any bar; click to inspect.' },
     { sel: '#pFind', t: 'Findings', p: 'Layout errors (overlapping signals, bits outside the payload), deadline-monotonic inversions and deadline misses. This demo network contains two clearly labelled planted errors.', before: () => { S.filter = 'all'; renderFindings(); } },
     { sel: '#drawer', t: 'Proof for one message', p: 'The drawer derives the worst-case response time step by step (blocking, busy period, every instance q), shows the exact frame on the wire with stuff bits, the signal layout and decoded values.', before: () => { const worst = S.analysis.results.slice().sort((a, b) => a.slack - b.slack)[0]; select(worst.key); } },
-    { sel: '#stress', t: 'Stress mode', p: 'Scale the load, jitter or inject background traffic and watch deadline misses appear in the table, timeline and 3D view. "Apply optimal priorities" re-assigns identifiers with Audsley\'s algorithm.', before: () => { closeDrawer(); setStress(true); animateStress(1.6); } },
+    { sel: '#stress', t: 'Stress mode', p: 'Scale the load (here ×3.5, ~98 % worst-case load), jitter or inject background traffic and watch deadline misses appear in the table, timeline and 3D view. "Apply optimal priorities" re-assigns identifiers with Audsley\'s algorithm.', before: () => { closeDrawer(); setStress(true); animateStress(3.5); } },
     { sel: '#pCmp', t: 'Data vs model', p: 'Observed arrival-time spread per ID against the analytical bound. Red dots are IDs where the model disagrees with the capture — reported, not hidden.', before: () => { Object.assign(S.stress, { load: 1, jit: 1, bg: 0 }); syncStressUI(); setStress(false); } },
     { sel: 'header.top', t: 'Your own network', p: 'Import a DBC and/or a candump / CSV log (or drag and drop). Edit T, D and J directly in the table, switch bitrate, and export CSV, SVG, PNG or an updated DBC. Everything runs offline.' },
   ];

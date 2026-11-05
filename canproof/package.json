@@ -6,6 +6,7 @@
   "private": true,
   "scripts": {
     "test": "node --test tests/*.test.js",
+    "test:ui": "node tests/ui.e2e.js",
     "build": "node tools/build.js",
     "synthetic": "node tools/make_synthetic.js"
   }

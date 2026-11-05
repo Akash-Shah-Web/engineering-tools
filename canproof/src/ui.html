@@ -15,7 +15,7 @@
     <div>CANProof <small>design-stage CAN timing proof</small></div>
   </div>
   <div class="hgroup">
-    <select id="example" class="ctl hide-sm" title="Example dataset"></select>
+    <select id="example" class="ctl" title="Example dataset"></select>
     <span id="dsChip"></span>
   </div>
   <div class="spacer"></div>
@@ -32,9 +32,9 @@
       </select></span>
     <button class="ctl" id="btnStress" title="Stress mode: scale load, jitter and priorities"><svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><path d="M13 2 4 14h7l-1 8 9-12h-7z"/></svg> Stress</button>
     <button class="ctl primary" id="btnTour" title="Guided demo"><svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><path d="M7 4v16l13-8z" fill="currentColor"/></svg> Guided demo</button>
-    <label class="ctl hide-sm" title="Import a DBC or a CAN log (candump / CSV)"><svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><path d="M12 16V4M6 10l6-6 6 6M4 20h16"/></svg> Import<input id="file" type="file" accept=".dbc,.log,.txt,.csv,.asc" multiple hidden></label>
+    <label class="ctl lbl-sm" title="Import a DBC or a CAN log (candump / CSV)"><svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><path d="M12 16V4M6 10l6-6 6 6M4 20h16"/></svg><span class="t"> Import</span><input id="file" type="file" accept=".dbc,.log,.txt,.csv,.asc" multiple hidden></label>
     <div class="rel">
-      <button class="ctl" id="btnExport" title="Export"><svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><path d="M12 4v12M6 10l6 6 6-6M4 20h16"/></svg> Export</button>
+      <button class="ctl lbl-sm" id="btnExport" title="Export"><svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><path d="M12 4v12M6 10l6 6 6-6M4 20h16"/></svg><span class="t"> Export</span></button>
       <div class="menu" id="exportMenu">
         <button data-x="csv-results">Results table (CSV)</button>
         <button data-x="csv-trace">Trace measurements (CSV)</button>
