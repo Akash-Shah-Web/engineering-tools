@@ -608,7 +608,7 @@
     const exs = examples(); const pick = Math.max(0, exs.findIndex((e) => e.id === params.get('example')));
     $('#example').value = String(pick);
     loadExample(exs[pick]);
-    if (params.get('speed')) { S.speed = +params.get('speed'); $('#pSpeed').value = params.get('speed'); }
+    if (params.get('speed')) { S.speed = +params.get('speed'); if (![...$('#pSpeed').options].some((o) => +o.value === S.speed)) $('#pSpeed').insertAdjacentHTML('beforeend', `<option value="${S.speed}">${S.speed}×</option>`); $('#pSpeed').value = String(S.speed); }
     if (params.get('t')) S.playhead = +params.get('t') * 1e6;
     if (params.get('paused')) { S.playing = false; updatePlayBtn(); }
     if (params.get('stress')) { setStress(true); S.stress.load = +params.get('stress'); syncStressUI(); recompute(); }
