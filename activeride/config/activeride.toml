@@ -53,6 +53,7 @@ gyro_std           = 0.003     # rad/s, pitch and roll rate gyros
 deflection_std     = 0.0005    # m, four suspension stroke sensors
 preview_height_std = 0.002     # m, look-ahead road sensor (lidar/camera) noise
 preview_distance   = 6.0       # m of road ahead visible to the preview sensor
+preview_smoothing_m = 1.0      # m, moving-average applied by the controller to the noisy look-ahead heights
 
 [control]
 dt               = 0.001       # s, controller sample time (1 kHz ECU)

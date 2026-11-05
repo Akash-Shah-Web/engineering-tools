@@ -90,7 +90,7 @@ def road_mesh_xml(road: Road, x0=-30.0, half_width=3.6, step=0.2, max_len=None):
         for j in range(ny - 1):
             a, b = i * ny + j, i * ny + j + 1
             c, d = (i + 1) * ny + j, (i + 1) * ny + j + 1
-            faces += [a, c, b, b, c, d]
+            faces += [a, b, c, b, d, c]
     vs = " ".join(f"{v:.4f}" for v in verts)
     fs = " ".join(str(f) for f in faces)
     return f'<mesh name="road" vertex="{vs}" face="{fs}"/>', xs[0], xs[-1]
@@ -159,10 +159,10 @@ def build_mjcf(cfg: Config, road: Road | None = None, color="0.86 0.30 0.16 1", 
   </visual>
   <asset>
     <texture name="sky" type="skybox" builtin="gradient" rgb1="0.42 0.55 0.70" rgb2="0.09 0.11 0.15" width="256" height="256"/>
-    <texture name="grass" type="2d" builtin="checker" rgb1="0.20 0.27 0.17" rgb2="0.18 0.25 0.15" width="512" height="512"/>
+    <texture name="grass" type="2d" builtin="flat" rgb1="0.24 0.31 0.20" rgb2="0.24 0.31 0.20" mark="random" markrgb="0.28 0.36 0.22" random="0.05" width="512" height="512"/>
     <texture name="asph" type="2d" builtin="flat" rgb1="0.23 0.24 0.26" rgb2="0.22 0.23 0.25" mark="random" markrgb="0.3 0.3 0.32" random="0.08" width="512" height="512"/>
-    <material name="ground" texture="grass" texrepeat="200 200" reflectance="0"/>
-    <material name="asphalt" texture="asph" texrepeat="1 1" rgba="0.36 0.37 0.40 1" specular="0.1" reflectance="0"/>
+    <material name="ground" texture="grass" texrepeat="60 60" reflectance="0"/>
+    <material name="asphalt" rgba="0.25 0.26 0.29 1" specular="0.05" shininess="0.1" reflectance="0"/>
     <material name="paint" rgba="{color}" specular="0.5" shininess="0.6" reflectance="0.05"/>
     <material name="glass" rgba="0.10 0.14 0.20 1" specular="0.9" shininess="0.9"/>
     <material name="trim" rgba="0.10 0.10 0.11 1"/>
@@ -174,8 +174,8 @@ def build_mjcf(cfg: Config, road: Road | None = None, color="0.86 0.30 0.16 1", 
     {''.join(assets)}
   </asset>
   <worldbody>
-    <light name="sun" pos="0 0 40" dir="-0.3 0.25 -1" directional="true" castshadow="true" diffuse="0.8 0.78 0.72"/>
-    <geom name="ground" type="plane" size="0 0 1" pos="0 0 -0.05" material="ground" contype="0" conaffinity="0"/>
+    <light name="sun" pos="0 0 40" dir="-0.3 0.25 -1" directional="true" castshadow="false" diffuse="0.55 0.54 0.50"/>
+    <geom name="ground" type="plane" size="0 0 1" pos="0 0 -0.12" material="ground" contype="0" conaffinity="0"/>
     {road_geom}
     <body name="chassis" pos="0 0 {h_cg}">
       <joint name="x" type="slide" axis="1 0 0"/>
@@ -191,6 +191,7 @@ def build_mjcf(cfg: Config, road: Road | None = None, color="0.86 0.30 0.16 1", 
       <geom type="box" size="0.02 0.18 0.035" pos="{v.a + 0.94:.3f} -0.62 0.05" material="lamp" contype="0" conaffinity="0"/>
       <geom type="box" size="0.02 0.20 0.035" pos="{-v.b - 0.95:.3f} 0.6 0.08" material="tail" contype="0" conaffinity="0"/>
       <geom type="box" size="0.02 0.20 0.035" pos="{-v.b - 0.95:.3f} -0.6 0.08" material="tail" contype="0" conaffinity="0"/>
+      <light name="key" mode="trackcom" pos="-2 2 9" dir="0.2 -0.2 -1" cutoff="45" exponent="2" castshadow="true" diffuse="0.6 0.6 0.58" attenuation="1 0 0"/>
       <site name="imu" pos="0 0 0" size="0.01"/>
       <site name="seat" pos="{v.seat_x:.3f} {v.seat_y:.3f} 0" size="0.01"/>
       <camera name="chase" mode="track" pos="-9.5 -3.2 2.9" xyaxes="0.32 -0.95 0 0.16 0.05 0.99"/>

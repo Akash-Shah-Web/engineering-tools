@@ -66,7 +66,8 @@ def measurement_model(dm: DesignModel, cfg: Config, with_road=False):
     if with_road:
         zr = np.zeros((4, dm.n)); zr[:, 14:18] = np.eye(4)
         rows.append(zr)
-        std += [s["preview_height_std"] / np.sqrt(5.0)] * 4   # averaged over the 0.25 m envelope
+        n_avg = max(1.0, s["preview_smoothing_m"] / 0.05)            # points averaged by the smoothing
+        std += [s["preview_height_std"] / np.sqrt(n_avg)] * 4
     return np.vstack(rows), np.diag(np.square(std))
 
 

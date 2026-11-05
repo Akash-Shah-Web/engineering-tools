@@ -18,9 +18,9 @@ class PreviewSensor:
     Beyond the range the controller receives nothing (handled by the
     controller's finite preview horizon)."""
 
-    def __init__(self, road: Road, std: float, envelope_m: float, rng):
+    def __init__(self, road: Road, std: float, smoothing_m: float, rng):
         noisy = road.z_raw + rng.normal(0.0, std, road.z_raw.shape)
-        n = max(1, int(round(envelope_m / GRID_DX)))
+        n = max(1, int(round(smoothing_m / GRID_DX)))
         self.x = road.x
         self.z = np.vstack([_moving_average(z, n) for z in noisy])
 
@@ -85,7 +85,7 @@ def run_scenario(cfg: Config, sid: str, controllers=("passive", "skyhook", "lqr"
     out = {}
     for name in controllers:
         rng = np.random.default_rng(seed)          # identical noise realisation for every controller
-        prev = PreviewSensor(road, cfg.sensors["preview_height_std"], cfg.vehicle.envelope_m,
+        prev = PreviewSensor(road, cfg.sensors["preview_height_std"], cfg.sensors["preview_smoothing_m"],
                              np.random.default_rng(seed + 1))
         active = name != "passive"
         P = MujocoCar if plant_kind == "mujoco" else LinearCar
