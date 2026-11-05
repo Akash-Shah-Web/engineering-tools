@@ -97,7 +97,8 @@ def road_mesh_xml(road: Road, x0=-30.0, half_width=3.6, step=0.2, max_len=None):
 
 
 def build_mjcf(cfg: Config, road: Road | None = None, color="0.86 0.30 0.16 1", visual=True,
-               veh=None) -> str:
+               veh=None, h_cg=H_CG, wheel_inertia=(0.6, 0.02, 0.6)) -> str:
+    """h_cg / wheel_inertia can be changed for the geometry-matched validation variant."""
     v = veh or cfg.vehicle
     dt = cfg.sim["plant_dt"]
     Ws = v.static_sprung_loads()
@@ -122,11 +123,11 @@ def build_mjcf(cfg: Config, road: Road | None = None, color="0.86 0.30 0.16 1", 
     for i, nm in enumerate(WHEELS):
         side = 1 if y[i] > 0 else -1
         wheels.append(f"""
-      <body name="wheel_{nm}" pos="{x[i]:.4f} {y[i]:.4f} {zwc[i] - H_CG:.5f}">
+      <body name="wheel_{nm}" pos="{x[i]:.4f} {y[i]:.4f} {zwc[i] - h_cg:.5f}">
         <joint name="susp_{nm}" type="slide" axis="0 0 1" stiffness="{v.ks[i]:.3f}" damping="{v.cs[i]:.3f}"
                springref="{qref[i]:.6f}" armature="0"/>
         <joint name="spin_{nm}" type="hinge" axis="0 1 0" damping="0"/>
-        <inertial pos="0 0 0" mass="{v.mu[i]:.3f}" diaginertia="0.6 0.02 0.6"/>
+        <inertial pos="0 0 0" mass="{v.mu[i]:.3f}" diaginertia="{wheel_inertia[0]} {wheel_inertia[1]} {wheel_inertia[2]}"/>
         <geom type="mesh" mesh="tyre" material="rubber" contype="0" conaffinity="0"/>
         <geom type="mesh" mesh="rim" pos="0 {side * 0.004:.3f} 0" material="rim" contype="0" conaffinity="0"/>
         <geom type="box" size="{v.R0 * 0.58:.3f} 0.118 0.030" material="spoke" contype="0" conaffinity="0"/>
@@ -176,7 +177,7 @@ def build_mjcf(cfg: Config, road: Road | None = None, color="0.86 0.30 0.16 1", 
     <light name="sun" pos="0 0 40" dir="-0.3 0.25 -1" directional="true" castshadow="true" diffuse="0.8 0.78 0.72"/>
     <geom name="ground" type="plane" size="0 0 1" pos="0 0 -0.05" material="ground" contype="0" conaffinity="0"/>
     {road_geom}
-    <body name="chassis" pos="0 0 {H_CG}">
+    <body name="chassis" pos="0 0 {h_cg}">
       <joint name="x" type="slide" axis="1 0 0"/>
       <joint name="heave" type="slide" axis="0 0 1"/>
       <joint name="pitch" type="hinge" axis="0 1 0"/>
@@ -207,13 +208,14 @@ class MujocoCar:
     """MuJoCo plant. One call to step() advances one control period."""
 
     def __init__(self, cfg: Config, road: Road, speed: float, active=True, veh=None,
-                 visual=False, color="0.86 0.30 0.16 1"):
+                 visual=False, color="0.86 0.30 0.16 1", h_cg=H_CG, wheel_inertia=(0.6, 0.02, 0.6)):
         import mujoco
         self.mj = mujoco
         self.cfg = cfg
         self.veh = veh or cfg.vehicle
         self.road, self.V = road, speed
-        self.xml = build_mjcf(cfg, road if visual else None, color=color, visual=visual, veh=self.veh)
+        self.xml = build_mjcf(cfg, road if visual else None, color=color, visual=visual, veh=self.veh,
+                              h_cg=h_cg, wheel_inertia=wheel_inertia)
         self.m = mujoco.MjModel.from_xml_string(self.xml)
         self.d = mujoco.MjData(self.m)
         self.dt_ctrl = cfg.control["dt"]
@@ -234,6 +236,7 @@ class MujocoCar:
         Wt = self.veh.static_tyre_loads()
         self.zwc0 = self.veh.R0 - Wt / self.veh.kt          # static wheel-centre heights
         self.x_start = 0.0
+        self.zr_fn = None          # optional callable(t) -> (zr[4], zrdot[4]) overriding the road (tests)
         self._vel6 = np.zeros(6)
         self.tyre_force = Wt.copy()
         self.reset()
@@ -260,8 +263,11 @@ class MujocoCar:
 
     def _tyre(self):
         xw, zw, vzw = self.wheel_world()
-        zr = self.road.height(WHEEL_SIDE, xw)
-        zrd = self.road.slope(WHEEL_SIDE, xw) * self.V
+        if self.zr_fn is not None:
+            zr, zrd = self.zr_fn(self.d.time)
+        else:
+            zr = self.road.height(WHEEL_SIDE, xw)
+            zrd = self.road.slope(WHEEL_SIDE, xw) * self.V
         defl = self.veh.R0 - (zw - zr)          # tyre compression (m)
         F = self.veh.kt * defl + self.veh.ct * (zrd - vzw)
         if self.veh.liftoff:
@@ -314,13 +320,13 @@ class MujocoCar:
         d, v = self.d, self.veh
         mj = self.mj
         mj.mj_forward(self.m, self.d)
-        # kinetic energy of heave/pitch/roll/suspension motion (exclude forward speed and spin)
+        # kinetic energy of heave/pitch/roll/suspension motion (forward speed and spin removed)
         qv = d.qvel.copy()
-        qv[self.vx] = 0.0
-        qv[self.vspin] = 0.0
-        Mfull = np.zeros((self.m.nv, self.m.nv))
-        mj.mj_fullM(self.m, Mfull, d.qM)
-        T = 0.5 * qv @ Mfull @ qv
+        d.qvel[self.vx] = 0.0
+        d.qvel[self.vspin] = 0.0
+        mj.mj_energyVel(self.m, d)
+        T = float(d.energy[1])
+        d.qvel[:] = qv
         # potential: gravity + suspension springs + tyre springs
         zcom = d.xipos[:, 2] * self.m.body_mass
         Ug = G * zcom.sum()
@@ -328,8 +334,10 @@ class MujocoCar:
         qref = self.m.qpos_spring[self.qs]
         Us = 0.5 * np.sum(v.ks * (q - qref) ** 2)
         xw, zw, _ = self.wheel_world()
-        zr = self.road.height(WHEEL_SIDE, xw)
+        zr = self.zr_fn(self.d.time)[0] if self.zr_fn is not None else self.road.height(WHEEL_SIDE, xw)
         defl = v.R0 - (zw - zr)
+        if v.liftoff:
+            defl = np.maximum(defl, 0.0)     # an airborne tyre stores no energy
         Ut = 0.5 * np.sum(v.kt * defl ** 2)
         return T + Ug + Us + Ut
 
