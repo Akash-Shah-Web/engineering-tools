@@ -26,7 +26,7 @@ from activeride.road import road_for_scenario  # noqa: E402
 from activeride.sim import PreviewSensor, run, scenario_duration  # noqa: E402
 
 FPS = 30
-W, H, PH = 640, 400, 220            # per-car view size, plot strip height
+W, H, PH = 640, 400, 224            # per-car view size, plot strip height
 OUT = ROOT / "videos"
 VIDEOS = [("m13_A", "passive", "preview", 16.0), ("speed_bump", "passive", "preview", None),
           ("one_sided_bump", "passive", "lqr", None)]
@@ -83,7 +83,7 @@ def draw_plot(img, logs, names, t_now, t_end, sc):
         win = int(fs)
         i = int(np.searchsorted(l["t"], t_now))
         aw_now = np.sqrt(np.mean(aw[max(0, i - win):i + 1] ** 2))
-        d.text((x0 + 10 + k * 330, H + 6), f"{CONTROLLER_LABELS[n]}:  running a_w (Wk, 1 s) = {aw_now:.3f} m/s²",
+        d.text((x0 + 10 + k * 620, H + 6), f"{CONTROLLER_LABELS[n]}:  running a_w (Wk, 1 s) = {aw_now:.3f} m/s²",
                fill=RGB[n], font=_font(14))
     d.text((8, (y0 + y1) / 2 - 8), f"±{ymax:.1f}", fill=(150, 156, 166), font=_font(11))
     d.text((x0, y1 + 6), f"seat vertical acceleration [m/s²] vs time (0–{t_end:.0f} s)   ·   SIMULATED (MuJoCo)   ·   "
@@ -103,37 +103,40 @@ def main():
         pa, fa, la, sc = simulate(cfg, sid, ca, dur)
         pb, fb, lb, _ = simulate(cfg, sid, cb_, dur)
         n = min(len(fa), len(fb))
-        rends = [mujoco.Renderer(p.m, H, W) for p in (pa, pb)]
-        cams = []
-        for p in (pa, pb):
-            cam = mujoco.MjvCamera()
-            cam.type = mujoco.mjtCamera.mjCAMERA_TRACKING
-            cam.trackbodyid = mujoco.mj_name2id(p.m, mujoco.mjtObj.mjOBJ_BODY, "chassis")
-            cam.distance, cam.azimuth, cam.elevation = 8.0, 25.0, -13.0
-            cams.append(cam)
+        # one model/renderer for both cars (identical geometry); only the paint colour is swapped
+        m, d = pa.m, pa.d
+        rend = mujoco.Renderer(m, H, W)
+        cam = mujoco.MjvCamera()
+        mujoco.mjv_defaultCamera(cam)
+        cam.type = mujoco.mjtCamera.mjCAMERA_TRACKING
+        cam.trackbodyid = mujoco.mj_name2id(m, mujoco.mjtObj.mjOBJ_BODY, "chassis")
+        cam.distance, cam.azimuth, cam.elevation = 8.0, 25.0, -13.0
+        paint = mujoco.mj_name2id(m, mujoco.mjtObj.mjOBJ_MATERIAL, "paint")
         path = OUT / f"{sid}_{ca}_vs_{cb_}.mp4"
-        wr = imageio.get_writer(path, fps=FPS, codec="libx264", quality=None,
-                                ffmpeg_params=["-crf", "26", "-preset", "slow", "-pix_fmt", "yuv420p"])
+        wr = imageio.get_writer(path, fps=FPS, codec="libx264", quality=None, macro_block_size=8,
+                                pixelformat="yuv420p", ffmpeg_params=["-crf", "23", "-preset", "slow"])
         t_end = n / FPS
         for k in range(n):
             img = Image.new("RGB", (2 * W, H + PH))
-            for j, (p, fr, r, cam, nm) in enumerate(((pa, fa, rends[0], cams[0], ca), (pb, fb, rends[1], cams[1], cb_))):
-                p.d.qpos[:] = fr[k]
-                mujoco.mj_forward(p.m, p.d)
-                r.update_scene(p.d, camera=cam)
-                im = Image.fromarray(r.render())
+            for j, (fr, nm) in enumerate(((fa, ca), (fb, cb_))):
+                d.qpos[:] = fr[k]
+                mujoco.mj_forward(m, d)
+                m.mat_rgba[paint] = [float(v) for v in COLORS[nm].split()]
+                rend.update_scene(d, camera=cam)
+                im = Image.fromarray(rend.render())
                 dd = ImageDraw.Draw(im)
                 dd.rectangle([0, 0, W, 30], fill=(16, 19, 24))
                 dd.text((10, 6), CONTROLLER_LABELS[nm].upper(), fill=RGB[nm], font=_font(16))
                 dd.text((W - 250, 8), "SIMULATION · not a real car", fill=(170, 175, 185), font=_font(12))
                 img.paste(im, (j * W, 0))
-            d = ImageDraw.Draw(img)
-            d.line([W, 0, W, H], fill=(16, 19, 24), width=3)
-            d.text((10, H - 22), f"{sc['label']} · {sc['speed_kmh']:.0f} km/h · t = {k / FPS:5.2f} s",
-                   fill=(235, 235, 235), font=_font(13))
+            dr = ImageDraw.Draw(img)
+            dr.line([W, 0, W, H], fill=(16, 19, 24), width=3)
+            dr.text((10, H - 22), f"{sc['label']} · {sc['speed_kmh']:.0f} km/h · t = {k / FPS:5.2f} s · true vertical scale",
+                    fill=(235, 235, 235), font=_font(13))
             draw_plot(img, [la, lb], [ca, cb_], k / FPS, t_end, sc)
             wr.append_data(np.asarray(img))
         wr.close()
+        rend.close()   # a new Renderer per video otherwise corrupts the shared GL context
         made.append(path)
         print("  wrote", path, f"{path.stat().st_size / 1e6:.1f} MB", flush=True)
     return made

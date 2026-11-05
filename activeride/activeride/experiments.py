@@ -205,6 +205,8 @@ def export_viewer(res: dict | None = None, out=ROOT / "viewer" / "data" / "activ
             "vehicle": {"a": v.a, "b": v.b, "tf": v.tf, "tr": v.tr, "R0": v.R0, "h_cg": 0.55,
                         "seat_x": v.seat_x, "seat_y": v.seat_y,
                         "static_tyre_N": v.static_tyre_loads().tolist(),
+                        "wheel_centre_static_m": (v.R0 - v.static_tyre_loads() / v.kt).tolist(),
+                        "x_corner": v.x.tolist(), "y_corner": v.y.tolist(),
                         "fmax": cfg.actuator.fmax, "preview_m": cfg.sensors["preview_distance"]},
             "controllers": {c: CONTROLLER_LABELS[c] for c in CONTROLLERS},
             "channels": ["t", "x", "zs", "pitch", "roll", "zu0", "zu1", "zu2", "zu3", "s0", "s1", "s2", "s3",
