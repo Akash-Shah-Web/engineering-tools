@@ -1,0 +1,7 @@
+data/raw/
+results/runs/
+__pycache__/
+*.pyc
+.pytest_cache/
+videos/frames/
+node_modules/

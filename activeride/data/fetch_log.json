@@ -1,0 +1,44 @@
+{
+  "access_date_utc": "2026-11-05",
+  "ltpp": {
+    "url": "https://infopave.fhwa.dot.gov/",
+    "status": "unreachable: URLError: <urlopen error Tunnel connection failed: 403 Forbidden>",
+    "user_exported_files": []
+  },
+  "lira_cd": {
+    "full_file": {
+      "url": "https://ndownloader.figshare.com/files/41206187",
+      "status": "unavailable: URLError: <urlopen error Tunnel connection failed: 403 Forbidden>"
+    },
+    "mirror": {
+      "repo": "https://github.com/MingyiLiuGT/VehicleVibrationSuppression.git",
+      "commit": "33b1254f1f86df724dedc4ddf0ed0aed6c163813",
+      "status": "ok"
+    },
+    "samples": {
+      "A": {
+        "file": "data/samples/lira_m13_A.csv",
+        "rows": 6000,
+        "sha256": "1e193fe22720d930c803f62af3d7daecd7ead53d7847dbf91daf1607c51a7391",
+        "excerpt_sha256_verified": true
+      },
+      "B": {
+        "file": "data/samples/lira_m13_B.csv",
+        "rows": 5066,
+        "sha256": "eb87906cf6481247fa73aab1b22751b0ca49a0ad08f1f33b94a4d5c350ad3729",
+        "excerpt_sha256_verified": true
+      },
+      "C": {
+        "file": "data/samples/lira_m13_C.csv",
+        "rows": 5066,
+        "sha256": "46e1c1908d1097c9f276a4efa62d9e5e4a3cfbfeb63706bc2f5ab7f076c73042",
+        "excerpt_sha256_verified": true
+      }
+    },
+    "route": "GitHub mirror of original-byte excerpts"
+  },
+  "warwick": {
+    "url": "https://zenodo.org/records/17242919/files/suspension_dataset.mat?download=1",
+    "status": "unavailable: URLError: <urlopen error Tunnel connection failed: 403 Forbidden>"
+  }
+}
