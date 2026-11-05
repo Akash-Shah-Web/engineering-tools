@@ -13,7 +13,9 @@
   function heat(u) {
     u = Math.max(0, Math.min(0.9999, u)) * (HEAT.length - 1);
     const i = Math.floor(u), w = u - i, a = HEAT[i], b = HEAT[i + 1];
-    return [a[0] + (b[0] - a[0]) * w, a[1] + (b[1] - a[1]) * w, a[2] + (b[2] - a[2]) * w];
+    // ramp defined in sRGB; vertex colours are linear
+    const c = new T.Color().setRGB(a[0] + (b[0] - a[0]) * w, a[1] + (b[1] - a[1]) * w, a[2] + (b[2] - a[2]) * w, T.SRGBColorSpace);
+    return [c.r, c.g, c.b];
   }
 
   class Stage {
@@ -148,8 +150,9 @@
         rough[i] = v; rr.push(v);
       }
       rr.sort((p, q) => p - q);
-      const p98 = rr[Math.floor(rr.length * 0.98)] || 1;
-      this.rough = rough.map((v) => v / (p98 || 1));
+      const inside = rr.filter((v) => v > 0);
+      const p05 = inside[Math.floor(inside.length * 0.05)] || 0, p98 = inside[Math.floor(inside.length * 0.98)] || 1;
+      this.rough = rough.map((v) => (v > 0 ? (v - p05) / Math.max(1e-9, p98 - p05) : 0));
       this.colorRoad();
       this.buildMarkings(xs, hAt);
       this.buildProps(L);

@@ -77,6 +77,9 @@
     setControllers("passive", "preview");
     requestAnimationFrame(loop);
     setTimeout(() => $("#splash").classList.add("is-gone"), 150);
+    // small scripting hook (used by the headless screenshot/GIF tests)
+    window.ActiveRide = { state: S, setScenario: (id) => setScenario(idOf(id), true), setControllers, setCam, setExag,
+                          setXray, setHeat, setGhost, setPlaying, setSpeed, demo: Demo };
   }
 
   function placeTip(tip, x, y) {
@@ -411,6 +414,7 @@
   let last = performance.now();
   function loop(now) {
     const dt = Math.min(0.05, (now - last) / 1000); last = now;
+    if (!isFinite(S.t)) S.t = 0;
     if (S.playing && S.runA) {
       if (S.t >= S.T - 1e-6) {
         S.endPause += dt;
