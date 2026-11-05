@@ -1,0 +1,941 @@
+{
+ "python_control": "0.10.2",
+ "numpy": "2.5.3",
+ "checks": [
+  {
+   "check": "fit FOPDT: SSE at JS optimum reproduced by python-control",
+   "ok": true,
+   "sse_js": 26.6949,
+   "sse_py": 26.6954
+  },
+  {
+   "check": "fit FOPDT: scipy least_squares optimum agrees with JS (K, tau1 within 1 %)",
+   "ok": true,
+   "js": {
+    "K": 0.7715,
+    "tau1": 151.6097,
+    "theta": 15.7152,
+    "y0": 23.3225
+   },
+   "py": {
+    "K": 0.7714,
+    "tau1": 151.6011,
+    "theta": 15.7094,
+    "y0": 23.3289
+   }
+  },
+  {
+   "check": "fit FOPDT: JS SSE not worse than scipy optimum (+1 %)",
+   "ok": true,
+   "sse_js": 26.6949,
+   "sse_scipy": 26.6958
+  },
+  {
+   "check": "fit SOPDT: SSE at JS optimum reproduced by python-control",
+   "ok": true,
+   "sse_js": 20.8517,
+   "sse_py": 20.8531
+  },
+  {
+   "check": "fit SOPDT: scipy least_squares optimum agrees with JS (K, tau1 within 1 %)",
+   "ok": true,
+   "js": {
+    "K": 0.777,
+    "tau1": 150.172,
+    "tau2": 11.1882,
+    "theta": 4.1074,
+    "y0": 23.0211
+   },
+   "py": {
+    "K": 0.7778,
+    "tau1": 150.122,
+    "tau2": 11.6053,
+    "theta": 3.5225,
+    "y0": 22.9803
+   }
+  },
+  {
+   "check": "fit SOPDT: JS SSE not worse than scipy optimum (+1 %)",
+   "ok": true,
+   "sse_js": 20.8517,
+   "sse_scipy": 20.8713
+  },
+  {
+   "check": "tuning: 48 SIMC/lambda cases match re-typed formulas",
+   "ok": true,
+   "max_rel_err": 0.0
+  },
+  {
+   "check": "plant step FOPDT theta=15.7 Ts=1 (frac 0.715): sampled response exact",
+   "ok": true,
+   "err": 7.626757427095146e-15
+  },
+  {
+   "check": "plant step FOPDT theta=15.7 Ts=2 (frac 1.72): sampled response exact",
+   "ok": true,
+   "err": 2.446318420011651e-15
+  },
+  {
+   "check": "plant step FOPDT theta=15.7 Ts=5 (frac 0.715): sampled response exact",
+   "ok": true,
+   "err": 3.741428171782524e-15
+  },
+  {
+   "check": "plant step FOPDT theta=15.7 Ts=0.7 (frac 0.315): sampled response exact",
+   "ok": true,
+   "err": 1.1080383431817476e-14
+  },
+  {
+   "check": "plant step SOPDT theta=4.11 Ts=1 (frac 0.107): sampled response exact",
+   "ok": true,
+   "err": 2.453401712109793e-13
+  },
+  {
+   "check": "plant step SOPDT theta=4.11 Ts=2 (frac 0.107): sampled response exact",
+   "ok": true,
+   "err": 1.443177477711643e-14
+  },
+  {
+   "check": "plant step SOPDT theta=4.11 Ts=5 (frac 4.11): sampled response exact",
+   "ok": true,
+   "err": 5.00111007127797e-15
+  },
+  {
+   "check": "plant step SOPDT theta=4.11 Ts=0.7 (frac 0.607): sampled response exact",
+   "ok": true,
+   "err": 5.749847693377872e-13
+  },
+  {
+   "check": "plant c2d FOPDT theta=10 Ts=1: JS G(z) == control.c2d(zoh)*z^-d",
+   "ok": true,
+   "rel_err": 6.012796838354311e-15
+  },
+  {
+   "check": "plant step FOPDT theta=10 Ts=1 (frac 0): sampled response exact",
+   "ok": true,
+   "err": 2.220446049250313e-15
+  },
+  {
+   "check": "plant c2d FOPDT theta=10 Ts=2: JS G(z) == control.c2d(zoh)*z^-d",
+   "ok": true,
+   "rel_err": 3.2792968950516712e-15
+  },
+  {
+   "check": "plant step FOPDT theta=10 Ts=2 (frac 0): sampled response exact",
+   "ok": true,
+   "err": 1.1102230246251565e-15
+  },
+  {
+   "check": "plant c2d FOPDT theta=10 Ts=5: JS G(z) == control.c2d(zoh)*z^-d",
+   "ok": true,
+   "rel_err": 3.4620871853447644e-16
+  },
+  {
+   "check": "plant step FOPDT theta=10 Ts=5 (frac 0): sampled response exact",
+   "ok": true,
+   "err": 4.440892098500626e-16
+  },
+  {
+   "check": "plant step FOPDT theta=10 Ts=0.7 (frac 0.2): sampled response exact",
+   "ok": true,
+   "err": 3.4416913763379853e-15
+  },
+  {
+   "check": "plant c2d SOPDT theta=3 Ts=1: JS G(z) == control.c2d(zoh)*z^-d",
+   "ok": true,
+   "rel_err": 3.970960809907573e-14
+  },
+  {
+   "check": "plant step SOPDT theta=3 Ts=1 (frac 0): sampled response exact",
+   "ok": true,
+   "err": 7.105427357601002e-15
+  },
+  {
+   "check": "plant step SOPDT theta=3 Ts=2 (frac 1): sampled response exact",
+   "ok": true,
+   "err": 1.080617077301819e-14
+  },
+  {
+   "check": "plant step SOPDT theta=3 Ts=5 (frac 3): sampled response exact",
+   "ok": true,
+   "err": 1.924386576016938e-15
+  },
+  {
+   "check": "plant step SOPDT theta=3 Ts=0.7 (frac 0.2): sampled response exact",
+   "ok": true,
+   "err": 8.630133644752884e-14
+  },
+  {
+   "check": "plant c2d FOPDT theta=4 Ts=2: JS G(z) == control.c2d(zoh)*z^-d",
+   "ok": true,
+   "rel_err": 3.7894282838295577e-16
+  },
+  {
+   "check": "plant step FOPDT theta=4 Ts=2 (frac 0): sampled response exact",
+   "ok": true,
+   "err": 2.220446049250313e-16
+  },
+  {
+   "check": "plant c2d SOPDT theta=6 Ts=1.5: JS G(z) == control.c2d(zoh)*z^-d",
+   "ok": true,
+   "rel_err": 8.606746399106654e-14
+  },
+  {
+   "check": "plant step SOPDT theta=6 Ts=1.5 (frac 0): sampled response exact",
+   "ok": true,
+   "err": 5.773159728050814e-15
+  },
+  {
+   "check": "margins FOPDT K=0.772 PI Ts=1 (python C(z)*G(z), plant via expm)",
+   "ok": true,
+   "js": [
+    3.02737,
+    57.9167,
+    0.031987
+   ],
+   "python_control": [
+    3.02737,
+    57.9167,
+    0.031987
+   ]
+  },
+  {
+   "check": "Ms FOPDT K=0.772 PI Ts=1",
+   "ok": true,
+   "js": 1.63077,
+   "python_dense": 1.63077,
+   "stability_margins_sm": 1.63077
+  },
+  {
+   "check": "closed-loop poles FOPDT K=0.772 PI Ts=1",
+   "ok": true,
+   "n": 18,
+   "max_dist": 9.371614595465871e-12,
+   "max_radius": 0.991631,
+   "stable_js": true
+  },
+  {
+   "check": "continuous margins FOPDT K=0.772 PI Ts=1 (Pad\u00e9-12 reference)",
+   "ok": true,
+   "js": [
+    3.1112,
+    58.785
+   ],
+   "pade": [
+    3.1112,
+    58.785
+   ]
+  },
+  {
+   "check": "margins FOPDT K=0.772 PI Ts=3 (python C(z)*G(z), plant via expm)",
+   "ok": true,
+   "js": [
+    2.88131,
+    56.2143,
+    0.031738
+   ],
+   "python_control": [
+    2.88131,
+    56.2143,
+    0.031738
+   ]
+  },
+  {
+   "check": "Ms FOPDT K=0.772 PI Ts=3",
+   "ok": true,
+   "js": 1.68005,
+   "python_dense": 1.68005,
+   "stability_margins_sm": 1.68005
+  },
+  {
+   "check": "closed-loop poles FOPDT K=0.772 PI Ts=3",
+   "ok": true,
+   "n": 8,
+   "max_dist": 5.1221634536979036e-15,
+   "max_radius": 0.974841,
+   "stable_js": true
+  },
+  {
+   "check": "continuous margins FOPDT K=0.772 PI Ts=3 (Pad\u00e9-12 reference)",
+   "ok": true,
+   "js": [
+    3.1112,
+    58.785
+   ],
+   "pade": [
+    3.1112,
+    58.785
+   ]
+  },
+  {
+   "check": "margins FOPDT K=0.772 PID Ts=1 (python C(z)*G(z), plant via expm)",
+   "ok": true,
+   "js": [
+    3.10427,
+    66.4546,
+    0.033767
+   ],
+   "python_control": [
+    3.10427,
+    66.4546,
+    0.033767
+   ]
+  },
+  {
+   "check": "Ms FOPDT K=0.772 PID Ts=1",
+   "ok": true,
+   "js": 1.5161,
+   "python_dense": 1.5161,
+   "stability_margins_sm": 1.5161
+  },
+  {
+   "check": "closed-loop poles FOPDT K=0.772 PID Ts=1",
+   "ok": true,
+   "n": 19,
+   "max_dist": 1.2917444891513696e-12,
+   "max_radius": 0.991618,
+   "stable_js": true
+  },
+  {
+   "check": "continuous margins FOPDT K=0.772 PID Ts=1 (Pad\u00e9-12 reference)",
+   "ok": true,
+   "js": [
+    3.282,
+    67.412
+   ],
+   "pade": [
+    3.282,
+    67.412
+   ]
+  },
+  {
+   "check": "margins FOPDT K=0.772 PID Ts=3 (python C(z)*G(z), plant via expm)",
+   "ok": true,
+   "js": [
+    2.83288,
+    64.5513,
+    0.033685
+   ],
+   "python_control": [
+    2.83288,
+    64.5513,
+    0.033685
+   ]
+  },
+  {
+   "check": "Ms FOPDT K=0.772 PID Ts=3",
+   "ok": true,
+   "js": 1.59054,
+   "python_dense": 1.59054,
+   "stability_margins_sm": 1.59054
+  },
+  {
+   "check": "closed-loop poles FOPDT K=0.772 PID Ts=3",
+   "ok": true,
+   "n": 9,
+   "max_dist": 4.574118861455645e-14,
+   "max_radius": 0.974772,
+   "stable_js": true
+  },
+  {
+   "check": "continuous margins FOPDT K=0.772 PID Ts=3 (Pad\u00e9-12 reference)",
+   "ok": true,
+   "js": [
+    3.282,
+    67.412
+   ],
+   "pade": [
+    3.282,
+    67.412
+   ]
+  },
+  {
+   "check": "margins SOPDT K=0.777 PI Ts=1 (python C(z)*G(z), plant via expm)",
+   "ok": true,
+   "js": [
+    2.85364,
+    30.6613,
+    0.060021
+   ],
+   "python_control": [
+    2.85364,
+    30.6613,
+    0.060021
+   ]
+  },
+  {
+   "check": "Ms SOPDT K=0.777 PI Ts=1",
+   "ok": true,
+   "js": 2.33734,
+   "python_dense": 2.33734,
+   "stability_margins_sm": 2.33734
+  },
+  {
+   "check": "closed-loop poles SOPDT K=0.777 PI Ts=1",
+   "ok": true,
+   "n": 8,
+   "max_dist": 2.426947531830592e-13,
+   "max_radius": 0.980402,
+   "stable_js": true
+  },
+  {
+   "check": "continuous margins SOPDT K=0.777 PI Ts=1 (Pad\u00e9-12 reference)",
+   "ok": true,
+   "js": [
+    3.1671,
+    32.317
+   ],
+   "pade": [
+    3.1671,
+    32.317
+   ]
+  },
+  {
+   "check": "margins SOPDT K=0.777 PI Ts=3 (python C(z)*G(z), plant via expm)",
+   "ok": true,
+   "js": [
+    2.40224,
+    27.4545,
+    0.059267
+   ],
+   "python_control": [
+    2.40224,
+    27.4545,
+    0.059267
+   ]
+  },
+  {
+   "check": "Ms SOPDT K=0.777 PI Ts=3",
+   "ok": true,
+   "js": 2.61115,
+   "python_dense": 2.61115,
+   "stability_margins_sm": 2.61115
+  },
+  {
+   "check": "closed-loop poles SOPDT K=0.777 PI Ts=3",
+   "ok": true,
+   "n": 5,
+   "max_dist": 2.375877272697835e-14,
+   "max_radius": 0.944406,
+   "stable_js": true
+  },
+  {
+   "check": "continuous margins SOPDT K=0.777 PI Ts=3 (Pad\u00e9-12 reference)",
+   "ok": true,
+   "js": [
+    3.1671,
+    32.317
+   ],
+   "pade": [
+    3.1671,
+    32.317
+   ]
+  },
+  {
+   "check": "margins SOPDT K=0.777 PID Ts=1 (python C(z)*G(z), plant via expm)",
+   "ok": true,
+   "js": [
+    2.19615,
+    43.4583,
+    0.121371
+   ],
+   "python_control": [
+    2.19615,
+    43.4582,
+    0.121371
+   ]
+  },
+  {
+   "check": "Ms SOPDT K=0.777 PID Ts=1",
+   "ok": true,
+   "js": 2.09919,
+   "python_dense": 2.09919,
+   "stability_margins_sm": 2.09919
+  },
+  {
+   "check": "closed-loop poles SOPDT K=0.777 PID Ts=1",
+   "ok": true,
+   "n": 9,
+   "max_dist": 1.38355993328787e-12,
+   "max_radius": 0.959197,
+   "stable_js": true
+  },
+  {
+   "check": "continuous margins SOPDT K=0.777 PID Ts=1 (Pad\u00e9-12 reference)",
+   "ok": true,
+   "js": [
+    2.6601,
+    49.161
+   ],
+   "pade": [
+    2.6601,
+    49.161
+   ]
+  },
+  {
+   "check": "margins SOPDT K=0.777 PID Ts=3 (python C(z)*G(z), plant via expm)",
+   "ok": true,
+   "js": [
+    1.63677,
+    31.5485,
+    0.125276
+   ],
+   "python_control": [
+    1.63677,
+    31.5485,
+    0.125276
+   ]
+  },
+  {
+   "check": "Ms SOPDT K=0.777 PID Ts=3",
+   "ok": true,
+   "js": 3.01991,
+   "python_dense": 3.01991,
+   "stability_margins_sm": 3.01991
+  },
+  {
+   "check": "closed-loop poles SOPDT K=0.777 PID Ts=3",
+   "ok": true,
+   "n": 6,
+   "max_dist": 5.76018079126625e-14,
+   "max_radius": 0.882206,
+   "stable_js": true
+  },
+  {
+   "check": "continuous margins SOPDT K=0.777 PID Ts=3 (Pad\u00e9-12 reference)",
+   "ok": true,
+   "js": [
+    2.6601,
+    49.161
+   ],
+   "pade": [
+    2.6601,
+    49.161
+   ]
+  },
+  {
+   "check": "margins FOPDT K=2 PI Ts=1 (python C(z)*G(z), plant via expm)",
+   "ok": true,
+   "js": [
+    2.97105,
+    56.9766,
+    0.05024
+   ],
+   "python_control": [
+    2.97105,
+    56.9766,
+    0.05024
+   ]
+  },
+  {
+   "check": "Ms FOPDT K=2 PI Ts=1",
+   "ok": true,
+   "js": 1.64912,
+   "python_dense": 1.64912,
+   "stability_margins_sm": 1.64471
+  },
+  {
+   "check": "closed-loop poles FOPDT K=2 PI Ts=1",
+   "ok": true,
+   "n": 13,
+   "max_dist": 2.120525977034049e-14,
+   "max_radius": 0.986723,
+   "stable_js": true
+  },
+  {
+   "check": "continuous margins FOPDT K=2 PI Ts=1 (Pad\u00e9-12 reference)",
+   "ok": true,
+   "js": [
+    3.106,
+    58.349
+   ],
+   "pade": [
+    3.106,
+    58.349
+   ]
+  },
+  {
+   "check": "margins FOPDT K=2 PI Ts=3 (python C(z)*G(z), plant via expm)",
+   "ok": true,
+   "js": [
+    2.77981,
+    54.3632,
+    0.049575
+   ],
+   "python_control": [
+    2.77981,
+    54.3632,
+    0.049575
+   ]
+  },
+  {
+   "check": "Ms FOPDT K=2 PI Ts=3",
+   "ok": true,
+   "js": 1.72391,
+   "python_dense": 1.72391,
+   "stability_margins_sm": 1.72391
+  },
+  {
+   "check": "closed-loop poles FOPDT K=2 PI Ts=3",
+   "ok": true,
+   "n": 6,
+   "max_dist": 7.216449660063518e-15,
+   "max_radius": 0.960046,
+   "stable_js": true
+  },
+  {
+   "check": "continuous margins FOPDT K=2 PI Ts=3 (Pad\u00e9-12 reference)",
+   "ok": true,
+   "js": [
+    3.106,
+    58.349
+   ],
+   "pade": [
+    3.106,
+    58.349
+   ]
+  },
+  {
+   "check": "margins FOPDT K=2 PID Ts=1 (python C(z)*G(z), plant via expm)",
+   "ok": true,
+   "js": [
+    3.00651,
+    65.5177,
+    0.053052
+   ],
+   "python_control": [
+    3.00651,
+    65.5177,
+    0.053052
+   ]
+  },
+  {
+   "check": "Ms FOPDT K=2 PID Ts=1",
+   "ok": true,
+   "js": 1.53979,
+   "python_dense": 1.53979,
+   "stability_margins_sm": 1.53979
+  },
+  {
+   "check": "closed-loop poles FOPDT K=2 PID Ts=1",
+   "ok": true,
+   "n": 14,
+   "max_dist": 2.3203661214665772e-14,
+   "max_radius": 0.986694,
+   "stable_js": true
+  },
+  {
+   "check": "continuous margins FOPDT K=2 PID Ts=1 (Pad\u00e9-12 reference)",
+   "ok": true,
+   "js": [
+    3.2837,
+    67.03
+   ],
+   "pade": [
+    3.2837,
+    67.03
+   ]
+  },
+  {
+   "check": "margins FOPDT K=2 PID Ts=3 (python C(z)*G(z), plant via expm)",
+   "ok": true,
+   "js": [
+    2.67711,
+    62.5676,
+    0.052782
+   ],
+   "python_control": [
+    2.67711,
+    62.5676,
+    0.052782
+   ]
+  },
+  {
+   "check": "Ms FOPDT K=2 PID Ts=3",
+   "ok": true,
+   "js": 1.64836,
+   "python_dense": 1.64836,
+   "stability_margins_sm": 1.64836
+  },
+  {
+   "check": "closed-loop poles FOPDT K=2 PID Ts=3",
+   "ok": true,
+   "n": 7,
+   "max_dist": 1.1657341758564144e-14,
+   "max_radius": 0.959878,
+   "stable_js": true
+  },
+  {
+   "check": "continuous margins FOPDT K=2 PID Ts=3 (Pad\u00e9-12 reference)",
+   "ok": true,
+   "js": [
+    3.2837,
+    67.03
+   ],
+   "pade": [
+    3.2837,
+    67.03
+   ]
+  },
+  {
+   "check": "margins SOPDT K=-1.5 PI Ts=1 (python C(z)*G(z), plant via expm)",
+   "ok": true,
+   "js": [
+    3.43098,
+    44.4855,
+    0.076657
+   ],
+   "python_control": [
+    3.43098,
+    44.4855,
+    0.076657
+   ]
+  },
+  {
+   "check": "Ms SOPDT K=-1.5 PI Ts=1",
+   "ok": true,
+   "js": 1.86465,
+   "python_dense": 1.86465,
+   "stability_margins_sm": 1.86465
+  },
+  {
+   "check": "closed-loop poles SOPDT K=-1.5 PI Ts=1",
+   "ok": true,
+   "n": 7,
+   "max_dist": 3.7414515929867775e-14,
+   "max_radius": 0.977729,
+   "stable_js": true
+  },
+  {
+   "check": "continuous margins SOPDT K=-1.5 PI Ts=1 (Pad\u00e9-12 reference)",
+   "ok": true,
+   "js": [
+    3.9251,
+    46.51
+   ],
+   "pade": [
+    3.9251,
+    46.51
+   ]
+  },
+  {
+   "check": "margins SOPDT K=-1.5 PI Ts=3 (python C(z)*G(z), plant via expm)",
+   "ok": true,
+   "js": [
+    2.79407,
+    40.6414,
+    0.07524
+   ],
+   "python_control": [
+    2.79407,
+    40.6414,
+    0.07524
+   ]
+  },
+  {
+   "check": "Ms SOPDT K=-1.5 PI Ts=3",
+   "ok": true,
+   "js": 2.05111,
+   "python_dense": 2.05112,
+   "stability_margins_sm": 2.05112
+  },
+  {
+   "check": "closed-loop poles SOPDT K=-1.5 PI Ts=3",
+   "ok": true,
+   "n": 5,
+   "max_dist": 1.099120794378905e-14,
+   "max_radius": 0.932791,
+   "stable_js": true
+  },
+  {
+   "check": "continuous margins SOPDT K=-1.5 PI Ts=3 (Pad\u00e9-12 reference)",
+   "ok": true,
+   "js": [
+    3.9251,
+    46.51
+   ],
+   "pade": [
+    3.9251,
+    46.51
+   ]
+  },
+  {
+   "check": "margins SOPDT K=-1.5 PID Ts=1 (python C(z)*G(z), plant via expm)",
+   "ok": true,
+   "js": [
+    2.60628,
+    56.6801,
+    0.135435
+   ],
+   "python_control": [
+    2.60628,
+    56.681,
+    0.135431
+   ]
+  },
+  {
+   "check": "Ms SOPDT K=-1.5 PID Ts=1",
+   "ok": true,
+   "js": 1.79071,
+   "python_dense": 1.79072,
+   "stability_margins_sm": 1.79072
+  },
+  {
+   "check": "closed-loop poles SOPDT K=-1.5 PID Ts=1",
+   "ok": true,
+   "n": 8,
+   "max_dist": 2.248201624865942e-13,
+   "max_radius": 0.965517,
+   "stable_js": true
+  },
+  {
+   "check": "continuous margins SOPDT K=-1.5 PID Ts=1 (Pad\u00e9-12 reference)",
+   "ok": true,
+   "js": [
+    3.3164,
+    62.67
+   ],
+   "pade": [
+    3.3164,
+    62.67
+   ]
+  },
+  {
+   "check": "margins SOPDT K=-1.5 PID Ts=3 (python C(z)*G(z), plant via expm)",
+   "ok": true,
+   "js": [
+    1.86098,
+    43.9777,
+    0.140525
+   ],
+   "python_control": [
+    1.86098,
+    43.9777,
+    0.140525
+   ]
+  },
+  {
+   "check": "Ms SOPDT K=-1.5 PID Ts=3",
+   "ok": true,
+   "js": 2.43991,
+   "python_dense": 2.43991,
+   "stability_margins_sm": 2.43991
+  },
+  {
+   "check": "closed-loop poles SOPDT K=-1.5 PID Ts=3",
+   "ok": true,
+   "n": 6,
+   "max_dist": 1.965094753586527e-14,
+   "max_radius": 0.888228,
+   "stable_js": true
+  },
+  {
+   "check": "continuous margins SOPDT K=-1.5 PID Ts=3 (Pad\u00e9-12 reference)",
+   "ok": true,
+   "js": [
+    3.3164,
+    62.67
+   ],
+   "pade": [
+    3.3164,
+    62.67
+   ]
+  },
+  {
+   "check": "closed-loop sim SOPDT aw=none sat=off",
+   "ok": true,
+   "max_dy": 9.876544027065393e-13,
+   "max_du": 3.1661784305470064e-11,
+   "saturated_fraction": 0.0
+  },
+  {
+   "check": "closed-loop sim SOPDT aw=none sat=on",
+   "ok": true,
+   "max_dy": 3.822719918389339e-12,
+   "max_du": 1.1461764870546176e-10,
+   "saturated_fraction": 0.265
+  },
+  {
+   "check": "closed-loop sim SOPDT aw=clamp sat=off",
+   "ok": true,
+   "max_dy": 9.876544027065393e-13,
+   "max_du": 3.1661784305470064e-11,
+   "saturated_fraction": 0.0
+  },
+  {
+   "check": "closed-loop sim SOPDT aw=clamp sat=on",
+   "ok": true,
+   "max_dy": 1.2008172234345693e-12,
+   "max_du": 2.779643182293512e-11,
+   "saturated_fraction": 0.115
+  },
+  {
+   "check": "closed-loop sim SOPDT aw=backcalc sat=off",
+   "ok": true,
+   "max_dy": 9.876544027065393e-13,
+   "max_du": 3.1661784305470064e-11,
+   "saturated_fraction": 0.0
+  },
+  {
+   "check": "closed-loop sim SOPDT aw=backcalc sat=on",
+   "ok": true,
+   "max_dy": 1.0800249583553523e-12,
+   "max_du": 1.4921397450962104e-11,
+   "saturated_fraction": 0.104
+  },
+  {
+   "check": "closed-loop sim FOPDT aw=none sat=off",
+   "ok": true,
+   "max_dy": 3.694822225952521e-13,
+   "max_du": 3.694822225952521e-12,
+   "saturated_fraction": 0.0
+  },
+  {
+   "check": "closed-loop sim FOPDT aw=none sat=on",
+   "ok": true,
+   "max_dy": 6.536993168992922e-13,
+   "max_du": 4.902744876744691e-12,
+   "saturated_fraction": 0.203
+  },
+  {
+   "check": "closed-loop sim FOPDT aw=clamp sat=off",
+   "ok": true,
+   "max_dy": 3.694822225952521e-13,
+   "max_du": 3.694822225952521e-12,
+   "saturated_fraction": 0.0
+  },
+  {
+   "check": "closed-loop sim FOPDT aw=clamp sat=on",
+   "ok": true,
+   "max_dy": 4.760636329592671e-13,
+   "max_du": 4.519051799434237e-12,
+   "saturated_fraction": 0.102
+  },
+  {
+   "check": "closed-loop sim FOPDT aw=backcalc sat=off",
+   "ok": true,
+   "max_dy": 3.694822225952521e-13,
+   "max_du": 3.694822225952521e-12,
+   "saturated_fraction": 0.0
+  },
+  {
+   "check": "closed-loop sim FOPDT aw=backcalc sat=on",
+   "ok": true,
+   "max_dy": 5.115907697472721e-13,
+   "max_du": 3.794298208958935e-12,
+   "saturated_fraction": 0.133
+  },
+  {
+   "check": "linear closed loop SOPDT PID: JS sim == python-control forced_response",
+   "ok": true,
+   "max_dy": 1.2001066806988092e-11
+  },
+  {
+   "check": "linear closed loop SOPDT PID: JS sim == python-control forced_response",
+   "ok": true,
+   "max_dy": 1.2001066806988092e-11
+  }
+ ],
+ "passed": 109,
+ "failed": 0
+}
