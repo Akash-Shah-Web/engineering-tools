@@ -1,0 +1,236 @@
+VERSION "CANProof synthetic demo vehicle 1.0"
+
+NS_ :
+
+BS_:
+
+BU_: ECM TCM ESC EPS BCM IPC ADAS GW SRS HVAC
+
+BO_ 80 SRS_Status: 4 SRS
+ SG_ CrashDetected : 0|1@1+ (1,0) [0|1] "" BCM,IPC,GW
+ SG_ BeltDriver : 1|1@1+ (1,0) [0|1] "" BCM,IPC,GW
+ SG_ SRS_Counter : 2|4@1+ (1,0) [0|15] "" BCM,IPC,GW
+ SG_ SRS_Checksum : 6|8@1+ (1,0) [0|255] "" BCM,IPC,GW
+
+BO_ 160 ESC_WheelSpeeds: 8 ESC
+ SG_ WhlSpd_FL : 0|16@1+ (0.01,0) [0|655.35] "km/h" ECM,TCM,EPS,ADAS,IPC
+ SG_ WhlSpd_FR : 16|16@1+ (0.01,0) [0|655.35] "km/h" ECM,TCM,EPS,ADAS,IPC
+ SG_ WhlSpd_RL : 32|16@1+ (0.01,0) [0|655.35] "km/h" ECM,TCM,EPS,ADAS,IPC
+ SG_ WhlSpd_RR : 48|16@1+ (0.01,0) [0|655.35] "km/h" ECM,TCM,EPS,ADAS,IPC
+
+BO_ 176 ESC_Dynamics: 8 ESC
+ SG_ YawRate : 7|16@0- (0.01,0) [-327.68|327.67] "deg/s" ADAS,EPS,ECM
+ SG_ LatAccel : 23|16@0- (0.001,0) [-32.768|32.767] "m/s2" ADAS,EPS,ECM
+ SG_ LongAccel : 39|16@0- (0.001,0) [-32.768|32.767] "m/s2" ADAS,EPS,ECM
+ SG_ ESC_Counter : 48|4@1+ (1,0) [0|15] "" ADAS,EPS,ECM
+
+BO_ 192 ECM_Engine1: 8 ECM
+ SG_ EngSpeed : 0|16@1+ (0.25,0) [0|16383.75] "rpm" TCM,ESC,IPC,HVAC
+ SG_ PedalPos : 16|8@1+ (0.4,0) [0|100] "%" TCM,ESC,IPC,HVAC
+ SG_ EngTorqueAct : 24|12@1- (0.5,0) [-1024|1023.5] "Nm" TCM,ESC,IPC,HVAC
+ SG_ ECM_Counter : 36|4@1+ (1,0) [0|15] "" TCM,ESC,IPC,HVAC
+ SG_ ECM_Checksum : 40|8@1+ (1,0) [0|255] "" TCM,ESC,IPC,HVAC
+
+BO_ 208 TCM_Status: 8 TCM
+ SG_ GearActual : 0|4@1+ (1,0) [0|9] "" ECM,IPC,ESC
+ SG_ GearTarget : 4|4@1+ (1,0) [0|9] "" ECM,IPC,ESC
+ SG_ TurbineSpeed : 8|16@1+ (0.25,0) [0|16383.75] "rpm" ECM,IPC,ESC
+ SG_ TorqueReq : 24|12@1- (0.5,0) [-1024|1023.5] "Nm" ECM,IPC,ESC
+ SG_ TCM_Counter : 36|4@1+ (1,0) [0|15] "" ECM,IPC,ESC
+
+BO_ 224 EPS_Steering: 8 EPS
+ SG_ SteerAngle : 7|16@0- (0.1,0) [-3276.8|3276.7] "deg" ESC,ADAS
+ SG_ SteerRate : 23|16@0- (1,0) [-32768|32767] "deg/s" ESC,ADAS
+ SG_ DriverTorque : 39|12@0- (0.01,0) [-20.48|20.47] "Nm" ESC,ADAS
+ SG_ EPS_Counter : 48|4@1+ (1,0) [0|15] "" ESC,ADAS
+
+BO_ 240 ADAS_Request: 8 ADAS
+ SG_ AccelRequest : 0|12@1- (0.005,0) [-10.24|10.235] "m/s2" ESC,EPS,ECM
+ SG_ SteerTorqueReq : 12|12@1- (0.01,0) [-20.48|20.47] "Nm" ESC,EPS,ECM
+ SG_ LKA_Active : 24|1@1+ (1,0) [0|1] "" ESC,EPS,ECM
+ SG_ ACC_Active : 25|1@1+ (1,0) [0|1] "" ESC,EPS,ECM
+ SG_ ADAS_Counter : 26|4@1+ (1,0) [0|15] "" ESC,EPS,ECM
+
+BO_ 288 ECM_Engine2: 8 ECM
+ SG_ CoolantTemp : 0|8@1+ (1,-40) [-40|215] "degC" IPC,TCM,HVAC
+ SG_ OilTemp : 8|8@1+ (1,-40) [-40|215] "degC" IPC,TCM,HVAC
+ SG_ IntakeAirTemp : 16|8@1+ (1,-40) [-40|215] "degC" IPC,TCM,HVAC
+ SG_ ThrottlePos : 24|8@1+ (0.4,0) [0|100] "%" IPC,TCM,HVAC
+ SG_ BaroPressure : 32|8@1+ (0.5,0) [0|127.5] "kPa" IPC,TCM,HVAC
+
+BO_ 304 TCM_Shift: 4 TCM
+ SG_ ShiftInProgress : 0|1@1+ (1,0) [0|1] "" IPC
+ SG_ ClutchSlip : 1|16@1+ (0.1,0) [0|6553.5] "rpm" IPC
+
+BO_ 352 ADAS_Objects: 8 ADAS
+ SG_ LeadDistance : 0|12@1+ (0.1,0) [0|409.5] "m" IPC,GW
+ SG_ LeadRelSpeed : 12|12@1- (0.05,0) [-102.4|102.35] "m/s" IPC,GW
+ SG_ LaneOffset : 24|12@1- (0.01,0) [-20.48|20.47] "m" IPC,GW
+ SG_ LaneCurv : 36|16@1- (0.00001,0) [-0.32768|0.32767] "1/m" IPC,GW
+
+BO_ 416 ESC_Brake: 6 ESC
+ SG_ BrakePressure : 0|12@1+ (0.1,0) [0|409.5] "bar" ECM,IPC,BCM
+ SG_ BrakePedal : 12|1@1+ (1,0) [0|1] "" ECM,IPC,BCM
+ SG_ ABS_Active : 13|1@1+ (1,0) [0|1] "" ECM,IPC,BCM
+ SG_ VehSpeed : 14|16@1+ (0.01,0) [0|655.35] "km/h" ECM,IPC,BCM
+
+BO_ 672 BCM_Lights: 4 BCM
+ SG_ LowBeam : 0|1@1+ (1,0) [0|1] "" IPC,GW
+ SG_ HighBeam : 1|1@1+ (1,0) [0|1] "" IPC,GW
+ SG_ TurnLeft : 2|1@1+ (1,0) [0|1] "" IPC,GW
+ SG_ TurnRight : 3|1@1+ (1,0) [0|1] "" IPC,GW
+ SG_ BrakeLight : 4|1@1+ (1,0) [0|1] "" IPC,GW
+ SG_ AmbientLight : 5|8@1+ (1,0) [0|255] "lux" IPC,GW
+
+BO_ 688 BCM_Doors: 2 BCM
+ SG_ DoorFL : 0|1@1+ (1,0) [0|1] "" IPC,GW,SRS
+ SG_ DoorFR : 1|1@1+ (1,0) [0|1] "" IPC,GW,SRS
+ SG_ DoorRL : 2|1@1+ (1,0) [0|1] "" IPC,GW,SRS
+ SG_ DoorRR : 3|1@1+ (1,0) [0|1] "" IPC,GW,SRS
+ SG_ Trunk : 4|1@1+ (1,0) [0|1] "" IPC,GW,SRS
+ SG_ LockState : 5|2@1+ (1,0) [0|3] "" IPC,GW,SRS
+
+BO_ 800 HVAC_Status: 6 HVAC
+ SG_ CabinTemp : 0|8@1+ (0.5,-20) [-20|107.5] "degC" ECM,IPC
+ SG_ SetTemp : 8|8@1+ (0.5,-20) [-20|107.5] "degC" ECM,IPC
+ SG_ FanLevel : 16|4@1+ (1,0) [0|15] "" ECM,IPC
+ SG_ ACCompressorReq : 20|1@1+ (1,0) [0|1] "" ECM,IPC
+ SG_ CompressorLoad : 21|8@1+ (0.1,0) [0|25.5] "kW" ECM,IPC
+
+BO_ 928 IPC_Display: 8 IPC
+ SG_ Odometer : 0|24@1+ (0.1,0) [0|1677721.5] "km" GW
+ SG_ FuelLevel : 24|8@1+ (0.4,0) [0|100] "%" GW
+ SG_ DisplaySpeed : 32|16@1+ (0.01,0) [0|655.35] "km/h" GW
+ SG_ IPC_Counter : 48|4@1+ (1,0) [0|15] "" GW
+
+BO_ 960 ECM_Fuel: 8 ECM
+ SG_ FuelRate : 0|16@1+ (0.05,0) [0|3276.75] "L/h" IPC
+ SG_ FuelUsed : 16|24@1+ (0.001,0) [0|16777.215] "L" IPC
+ SG_ BatteryVoltage : 40|8@1+ (0.1,0) [0|25.5] "V" IPC
+
+BO_ 1024 GW_VehicleState: 8 GW
+ SG_ PowerMode : 0|3@1+ (1,0) [0|7] "" BCM,IPC,HVAC
+ SG_ WakeReason : 3|4@1+ (1,0) [0|15] "" BCM,IPC,HVAC
+ SG_ NetworkMgmt : 7|8@1+ (1,0) [0|255] "" BCM,IPC,HVAC
+ SG_ GW_Counter : 15|4@1+ (1,0) [0|15] "" BCM,IPC,HVAC
+
+BO_ 1104 SRS_Config: 4 SRS
+ SG_ PassengerOccupied : 0|1@1+ (1,0) [0|1] "" GW
+ SG_ AirbagLamp : 1|1@1+ (1,0) [0|1] "" GW
+ SG_ SRS_Version : 2|8@1+ (1,0) [0|255] "" GW
+
+BO_ 1136 TCM_Temps: 4 TCM
+ SG_ TransOilTemp : 0|8@1+ (1,-40) [-40|215] "degC" IPC
+ SG_ ClutchTemp : 8|8@1+ (1,-40) [-40|215] "degC" IPC
+
+BO_ 2564485536 ADAS_Diag: 8 ADAS
+ SG_ DiagCounter : 0|8@1+ (1,0) [0|255] "" GW
+ SG_ CamTemp : 8|8@1+ (1,-40) [-40|215] "degC" GW
+ SG_ RadarBlind : 16|1@1+ (1,0) [0|1] "" GW
+
+BO_ 2566844672 ECM_Emissions: 8 ECM
+ SG_ Lambda : 0|16@1+ (0.0001,0) [0|6.5535] "" GW
+ SG_ CatalystTemp : 16|12@1+ (0.5,0) [0|2047.5] "degC" GW
+ SG_ O2Sensor : 28|8@1+ (0.005,0) [0|1.275] "V" GW
+
+BO_ 2566869072 HVAC_Climate: 8 HVAC
+ SG_ OutsideTemp : 0|8@1+ (0.5,-40) [-40|87.5] "degC" GW,IPC
+ SG_ Humidity : 8|8@1+ (0.4,0) [0|100] "%" GW,IPC
+ SG_ SunLoad : 16|8@1+ (4,0) [0|1020] "W/m2" GW,IPC
+
+BO_ 200 ECM_Engine3: 8 ECM
+ SG_ TorqueLimit : 0|12@1- (0.5,0) [-1024|1023.5] "Nm" TCM,ESC
+ SG_ IdleTarget : 12|12@1+ (0.5,0) [0|2047.5] "rpm" TCM,ESC
+ SG_ EngState : 24|3@1+ (1,0) [0|7] "" TCM,ESC
+ SG_ ECM3_Counter : 27|4@1+ (1,0) [0|15] "" TCM,ESC
+ SG_ ECM3_Checksum : 31|8@1+ (1,0) [0|255] "" TCM,ESC
+
+BO_ 168 ESC_WheelPulses: 8 ESC
+ SG_ Pulse_FL : 0|10@1+ (1,0) [0|1023] "" ADAS,EPS
+ SG_ Pulse_FR : 10|10@1+ (1,0) [0|1023] "" ADAS,EPS
+ SG_ Pulse_RL : 20|10@1+ (1,0) [0|1023] "" ADAS,EPS
+ SG_ Pulse_RR : 30|10@1+ (1,0) [0|1023] "" ADAS,EPS
+ SG_ DirFwd : 40|1@1+ (1,0) [0|1] "" ADAS,EPS
+
+BO_ 360 ADAS_Lanes: 8 ADAS
+ SG_ LeftLaneDist : 0|12@1- (0.01,0) [-20.48|20.47] "m" IPC,EPS
+ SG_ RightLaneDist : 12|12@1- (0.01,0) [-20.48|20.47] "m" IPC,EPS
+ SG_ LaneQuality : 24|4@1+ (1,0) [0|15] "" IPC,EPS
+ SG_ HeadingErr : 28|16@1- (0.0001,0) [-3.2768|3.2767] "rad" IPC,EPS
+
+BO_ 704 BCM_Switches: 8 BCM
+ SG_ WiperMode : 0|3@1+ (1,0) [0|7] "" IPC,HVAC,GW
+ SG_ HornReq : 3|1@1+ (1,0) [0|1] "" IPC,HVAC,GW
+ SG_ HazardSw : 4|1@1+ (1,0) [0|1] "" IPC,HVAC,GW
+ SG_ SteerWheelBtns : 5|16@1+ (1,0) [0|65535] "" IPC,HVAC,GW
+ SG_ DimmerLevel : 21|8@1+ (1,0) [0|255] "" IPC,HVAC,GW
+
+BO_ 944 IPC_Warnings: 8 IPC
+ SG_ WarnBitfield : 0|32@1+ (1,0) [0|4294967295] "" GW
+ SG_ ServiceDays : 32|12@1+ (1,0) [0|4095] "d" GW
+
+BO_ 1440 ESC_ParkBrakeCmd: 8 ESC
+ SG_ EPB_Request : 0|2@1+ (1,0) [0|3] "" BCM,IPC
+ SG_ EPB_Force : 2|12@1+ (0.01,0) [0|40.95] "kN" BCM,IPC
+ SG_ EPB_Counter : 14|4@1+ (1,0) [0|15] "" BCM,IPC
+
+BO_ 1360 DIAG_Planted_Error: 2 GW
+ SG_ PlantedA : 0|12@1+ (1,0) [0|4095] "" IPC
+ SG_ PlantedB : 8|12@1+ (1,0) [0|4095] "" IPC
+
+CM_ "SYNTHETIC demo network generated by canproof/tools/make_synthetic.js. Not a real vehicle.";
+CM_ BO_ 1440 "PLANTED PRIORITY ERROR for demonstration: 4 ms deadline on low-priority ID 0x5A0.";
+CM_ BO_ 1360 "PLANTED ERROR for demonstration: signals overlap and run past the 2-byte payload.";
+BA_DEF_ BO_ "GenMsgCycleTime" INT 0 65535;
+BA_DEF_ BO_ "GenMsgDeadline" INT 0 65535;
+BA_DEF_ BO_ "GenMsgJitter" FLOAT 0 1000;
+BA_DEF_ BO_ "GenMsgSendType" ENUM "Cyclic","Event";
+BA_DEF_DEF_ "GenMsgCycleTime" 0;
+BA_DEF_DEF_ "GenMsgSendType" "Cyclic";
+BA_ "GenMsgCycleTime" BO_ 80 20;
+BA_ "GenMsgDeadline" BO_ 80 5;
+BA_ "GenMsgCycleTime" BO_ 160 10;
+BA_ "GenMsgDeadline" BO_ 160 5;
+BA_ "GenMsgJitter" BO_ 160 0.5;
+BA_ "GenMsgCycleTime" BO_ 176 10;
+BA_ "GenMsgDeadline" BO_ 176 5;
+BA_ "GenMsgJitter" BO_ 176 0.5;
+BA_ "GenMsgCycleTime" BO_ 192 10;
+BA_ "GenMsgDeadline" BO_ 192 10;
+BA_ "GenMsgJitter" BO_ 192 1;
+BA_ "GenMsgCycleTime" BO_ 208 10;
+BA_ "GenMsgJitter" BO_ 208 1;
+BA_ "GenMsgCycleTime" BO_ 224 10;
+BA_ "GenMsgDeadline" BO_ 224 5;
+BA_ "GenMsgCycleTime" BO_ 240 20;
+BA_ "GenMsgDeadline" BO_ 240 10;
+BA_ "GenMsgJitter" BO_ 240 2;
+BA_ "GenMsgCycleTime" BO_ 288 20;
+BA_ "GenMsgCycleTime" BO_ 304 20;
+BA_ "GenMsgCycleTime" BO_ 352 50;
+BA_ "GenMsgJitter" BO_ 352 3;
+BA_ "GenMsgCycleTime" BO_ 416 20;
+BA_ "GenMsgCycleTime" BO_ 672 100;
+BA_ "GenMsgJitter" BO_ 672 5;
+BA_ "GenMsgCycleTime" BO_ 688 100;
+BA_ "GenMsgCycleTime" BO_ 800 100;
+BA_ "GenMsgJitter" BO_ 800 5;
+BA_ "GenMsgCycleTime" BO_ 928 100;
+BA_ "GenMsgJitter" BO_ 928 2;
+BA_ "GenMsgCycleTime" BO_ 960 100;
+BA_ "GenMsgCycleTime" BO_ 1024 200;
+BA_ "GenMsgCycleTime" BO_ 1104 1000;
+BA_ "GenMsgCycleTime" BO_ 1136 1000;
+BA_ "GenMsgCycleTime" BO_ 2564485536 1000;
+BA_ "GenMsgCycleTime" BO_ 2566844672 100;
+BA_ "GenMsgCycleTime" BO_ 2566869072 500;
+BA_ "GenMsgCycleTime" BO_ 200 10;
+BA_ "GenMsgCycleTime" BO_ 168 20;
+BA_ "GenMsgCycleTime" BO_ 360 50;
+BA_ "GenMsgCycleTime" BO_ 704 50;
+BA_ "GenMsgCycleTime" BO_ 944 200;
+BA_ "GenMsgCycleTime" BO_ 1440 20;
+BA_ "GenMsgDeadline" BO_ 1440 4;
+BA_ "GenMsgCycleTime" BO_ 1360 1000;
+VAL_ 208 GearActual 0 "P" 1 "R" 2 "N" 3 "D1" 4 "D2" 5 "D3" 6 "D4" ;
+VAL_ 1024 PowerMode 0 "Off" 1 "Acc" 2 "Run" 3 "Crank" 4 "Drive" ;
