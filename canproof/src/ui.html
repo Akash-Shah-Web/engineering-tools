@@ -1,0 +1,169 @@
+<!doctype html>
+<html lang="en" data-theme="dark">
+<head>
+<meta charset="utf-8">
+<meta name="viewport" content="width=device-width, initial-scale=1">
+<title>CANProof — CAN timing proof</title>
+<meta name="description" content="Design-stage CAN bus timing proof: DBC parsing, bus load and worst-case response times (Davis, Burns, Bril & Lukkien 2007).">
+<link rel="icon" href="data:image/svg+xml,%3Csvg xmlns='http://www.w3.org/2000/svg' viewBox='0 0 32 32'%3E%3Crect width='32' height='32' rx='7' fill='%230a0e13'/%3E%3Cpath d='M5 20h5l3-8 4 12 3-8h7' stroke='%233cc8ff' stroke-width='2.6' fill='none' stroke-linecap='round' stroke-linejoin='round'/%3E%3C/svg%3E">
+<style>/*{{CSS}}*/</style>
+</head>
+<body>
+<header class="top">
+  <div class="brand">
+    <svg viewBox="0 0 32 32" aria-hidden="true"><rect width="32" height="32" rx="7" fill="var(--panel2)" stroke="var(--line2)"/><path d="M5 20h5l3-8 4 12 3-8h7" stroke="var(--accent)" stroke-width="2.6" fill="none" stroke-linecap="round" stroke-linejoin="round"/></svg>
+    <div>CANProof <small>design-stage CAN timing proof</small></div>
+  </div>
+  <div class="hgroup">
+    <select id="example" class="ctl hide-sm" title="Example dataset"></select>
+    <span id="dsChip"></span>
+  </div>
+  <div class="spacer"></div>
+  <div class="hgroup">
+    <span class="ctl" title="Bus bitrate"><label>Bitrate</label>
+      <select id="bitrate" style="background:none;border:0;padding:0;outline:none">
+        <option value="125000">125 kbit/s</option><option value="250000">250 kbit/s</option><option value="500000" selected>500 kbit/s</option><option value="1000000">1 Mbit/s</option>
+      </select></span>
+    <span class="ctl hide-sm" title="Analysis method"><label>Analysis</label>
+      <select id="method" style="background:none;border:0;padding:0;outline:none">
+        <option value="davis" selected>Davis et al. 2007 (exact)</option>
+        <option value="sufficient">Davis 2007 sufficient (eq. 16)</option>
+        <option value="tindell">Original Tindell — UNSAFE, comparison only</option>
+      </select></span>
+    <button class="ctl" id="btnStress" title="Stress mode: scale load, jitter and priorities"><svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><path d="M13 2 4 14h7l-1 8 9-12h-7z"/></svg> Stress</button>
+    <button class="ctl primary" id="btnTour" title="Guided demo"><svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><path d="M7 4v16l13-8z" fill="currentColor"/></svg> Guided demo</button>
+    <label class="ctl hide-sm" title="Import a DBC or a CAN log (candump / CSV)"><svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><path d="M12 16V4M6 10l6-6 6 6M4 20h16"/></svg> Import<input id="file" type="file" accept=".dbc,.log,.txt,.csv,.asc" multiple hidden></label>
+    <div class="rel">
+      <button class="ctl" id="btnExport" title="Export"><svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><path d="M12 4v12M6 10l6 6 6-6M4 20h16"/></svg> Export</button>
+      <div class="menu" id="exportMenu">
+        <button data-x="csv-results">Results table (CSV)</button>
+        <button data-x="csv-trace">Trace measurements (CSV)</button>
+        <button data-x="csv-compare">Model vs data comparison (CSV)</button>
+        <button data-x="svg-rd">Response-time chart (SVG)</button>
+        <button data-x="png-rd">Response-time chart (PNG)</button>
+        <button data-x="svg-timeline">Timeline view (SVG)</button>
+        <button data-x="png-timeline">Timeline view (PNG)</button>
+        <button data-x="png-car">3D view (PNG)</button>
+        <button data-x="svg-load">Load chart (SVG)</button>
+        <button data-x="dbc">Edited DBC timing (DBC)</button>
+      </div>
+    </div>
+    <button class="ctl iconbtn" id="btnTheme" title="Toggle light / dark theme"><svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><circle cx="12" cy="12" r="8"/><path d="M12 4a8 8 0 0 1 0 16z" fill="currentColor"/></svg></button>
+  </div>
+</header>
+
+<div class="banner" id="banner"></div>
+
+<div id="stress" class="stressbar">
+  <span class="chip bad">Stress mode · what-if</span>
+  <div class="grp"><label>Load ×</label><input id="sLoad" type="range" min="0.5" max="4" step="0.05" value="1"><span class="val" id="sLoadV">1.00×</span></div>
+  <div class="grp"><label>Jitter ×</label><input id="sJit" type="range" min="0" max="5" step="0.1" value="1"><span class="val" id="sJitV">1.0×</span></div>
+  <div class="grp"><label>Background traffic</label><input id="sBg" type="range" min="0" max="60" step="1" value="0"><span class="val" id="sBgV">0 %</span></div>
+  <button class="ctl" id="sOPA" title="Apply Audsley optimal priority assignment">Apply optimal priorities</button>
+  <button class="ctl" id="sReset">Reset</button>
+  <span class="note" style="margin:0">Load × divides every period; background traffic adds one lowest-ID (highest-priority) 8-byte flood message. All results <b>simulated / calculated</b>, not measured.</span>
+</div>
+
+<section class="kpis" id="kpis"></section>
+
+<main>
+  <section class="panel span-7" id="pCar">
+    <div class="ph"><h2>Vehicle network · X-ray</h2><span class="chip illustrative">node placement illustrative</span><span id="carSrc"></span>
+      <div class="tools"><button class="tbtn" id="btnSpin" title="Auto-rotate">⟳ Orbit</button><button class="tbtn" data-png="car">PNG</button></div></div>
+    <div class="pb" id="car">
+      <div class="labels" id="labels"></div>
+      <div class="overlay-tl">
+        <div class="legend"><span><span class="heatbar"></span> bus load heat</span></div>
+        <div class="legend" id="carLegend"></div>
+      </div>
+      <div class="overlay-br"><div class="sub" style="color:var(--muted);font-size:11px">bus load · 10 ms window at playhead</div><div class="loadgauge" id="loadGauge">—</div></div>
+    </div>
+  </section>
+
+  <section class="panel span-5" id="pFind">
+    <div class="ph"><h2>Findings</h2><span class="chip calculated">calculated</span>
+      <div class="tools filters"><button class="tbtn" data-f="all">All</button><button class="tbtn" data-f="error">Errors</button><button class="tbtn" data-f="warning">Warnings</button></div></div>
+    <div class="pb"><div class="findings" id="findings"></div></div>
+  </section>
+
+  <section class="panel span-12" id="pTimeline">
+    <div class="ph"><h2>Bus timeline</h2><span id="tlSrc"></span><span class="sub" id="tlSub"></span>
+      <div class="tools"><button class="tbtn" id="tlZoomOut">−</button><button class="tbtn" id="tlZoomIn">+</button><button class="tbtn" data-svg="timeline">SVG</button><button class="tbtn" data-png="timeline">PNG</button></div></div>
+    <div class="pb" style="padding-bottom:6px">
+      <div class="playbar">
+        <button class="ctl iconbtn" id="pPlay" title="Play / pause (space)">❚❚</button>
+        <button class="ctl iconbtn" id="pStep" title="Step to next frame">⇥</button>
+        <select class="ctl" id="pSpeed" title="Playback speed (simulated time per real second)">
+          <option value="0.002">0.002×</option><option value="0.005">0.005×</option><option value="0.01" selected>0.01×</option><option value="0.03">0.03×</option><option value="0.1">0.1×</option><option value="0.3">0.3×</option>
+        </select>
+        <select class="ctl" id="pSource" title="Replay source">
+          <option value="sim" selected>Replay: simulated model (queuing visible)</option>
+          <option value="trace">Replay: logged trace (transmissions only)</option>
+        </select>
+        <input type="range" id="pScrub" min="0" max="1000" value="0">
+        <span class="time" id="pTime">0.000 ms</span>
+      </div>
+      <div class="tl-legend" style="margin-top:8px">
+        <span><i style="background:var(--tx)"></i>transmission</span>
+        <span><i style="background:var(--block)"></i>blocked (lower priority on bus)</span>
+        <span><i style="background:var(--interf)"></i>interference (higher priority)</span>
+        <span><i style="background:var(--self)"></i>own earlier instance</span>
+        <span><i style="background:var(--bad);width:3px"></i>deadline</span>
+        <span><i style="background:var(--bad)"></i>deadline miss</span>
+      </div>
+    </div>
+    <div class="pb" id="timeline" style="padding:0 0 4px"><canvas id="tl"></canvas></div>
+  </section>
+
+  <section class="panel span-8" id="pTable">
+    <div class="ph"><h2>Messages · worst-case response</h2><span class="chip calculated">calculated</span><span class="sub">edit T / D / J in place · dashed = assumed</span>
+      <div class="tools"><button class="tbtn" data-csv="results">CSV</button></div></div>
+    <div class="pb"><div class="tablewrap"><table class="msgs" id="msgTable"></table></div></div>
+  </section>
+
+  <section class="panel span-4" id="pRD">
+    <div class="ph"><h2>Response vs deadline</h2><span class="chip calculated">calculated</span>
+      <div class="tools"><button class="tbtn" data-svg="rd">SVG</button><button class="tbtn" data-png="rd">PNG</button></div></div>
+    <div class="pb"><svg class="chart" id="rdChart"></svg><p class="note">Bar = R<sub>m</sub>, tick = deadline D<sub>m</sub>, faint = period T<sub>m</sub>. Log scale. Priority order top → bottom.</p></div>
+  </section>
+
+  <section class="panel span-6" id="pLoad">
+    <div class="ph"><h2>Bus load · data vs prediction</h2><span id="loadSrc"></span>
+      <div class="tools"><button class="tbtn" data-svg="load">SVG</button><button class="tbtn" data-png="load">PNG</button><button class="tbtn" data-csv="trace">CSV</button></div></div>
+    <div class="pb"><div class="statgrid" id="loadStats"></div><svg class="chart" id="loadChart"></svg><p class="note" id="loadNote"></p></div>
+  </section>
+
+  <section class="panel span-6" id="pCmp">
+    <div class="ph"><h2>Timing · data vs model</h2><span id="cmpSrc"></span>
+      <div class="tools"><select class="tbtn" id="cmpJ"><option value="J0">model J = 0 (assumed)</option><option value="Jm">model J = measured spread</option></select><button class="tbtn" data-svg="cmp">SVG</button><button class="tbtn" data-csv="compare">CSV</button></div></div>
+    <div class="pb"><svg class="chart" id="cmpChart"></svg><p class="note" id="cmpNote"></p></div>
+  </section>
+</main>
+
+<footer>
+  <details><summary>Method</summary><div id="methodText"></div></details>
+  <details><summary>Data provenance &amp; limitations</summary><div id="provText"></div></details>
+  <details><summary>Licences</summary><p>CANProof © 2026, MIT licence. Bundles <b>three.js r158</b> (MIT, © 2010-2023 three.js authors), included inline with its licence header. No network access is required; the page works offline.</p></details>
+</footer>
+
+<aside id="drawer" aria-hidden="true">
+  <div class="dh"><h3 id="dTitle">Message</h3><span id="dChips"></span><div class="spacer"></div>
+    <button class="ctl iconbtn" id="dUp" title="Raise priority (swap with next-higher)">▲</button>
+    <button class="ctl iconbtn" id="dDown" title="Lower priority (swap with next-lower)">▼</button>
+    <button class="ctl iconbtn" id="dClose" title="Close (Esc)">✕</button></div>
+  <div class="db" id="dBody"></div>
+</aside>
+
+<div id="tip"></div>
+<div id="tour"><div class="spot"></div><div class="card"><div class="prog"><i></i></div><h3></h3><p></p><div class="row"><button class="ctl" data-t="prev">◀</button><button class="ctl primary" data-t="next">Next ▶</button><div class="spacer"></div><button class="ctl" data-t="end">End tour</button></div></div></div>
+<div class="drop" id="drop">Drop a .dbc or CAN log (candump / CSV)</div>
+<div class="toast" id="toast"></div>
+
+<script>/*{{THREE}}*/</script>
+<script>/*{{CORE}}*/</script>
+<script>window.CANPROOF_DATA = /*{{DATA}}*/null;</script>
+<script>/*{{CHARTS}}*/</script>
+<script>/*{{CAR}}*/</script>
+<script>/*{{APP}}*/</script>
+</body>
+</html>
