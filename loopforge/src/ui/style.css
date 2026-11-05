@@ -136,7 +136,7 @@ input[type=range]::-moz-range-thumb { width: 10px; height: 10px; border-radius: 
 .diagram-wrap { background: var(--bg-2); border: 1px solid var(--line); border-radius: 10px; padding: 6px; overflow: hidden;
   background-image: linear-gradient(var(--line) 1px, transparent 1px), linear-gradient(90deg, var(--line) 1px, transparent 1px); background-size: 24px 24px; background-position: -1px -1px; }
 :root[data-theme="light"] .diagram-wrap { background-color: #f8fafc; }
-.diagram { width: 100%; height: auto; }
+.diagram { width: 100%; height: auto; max-height: 300px; }
 .blk rect.box { fill: var(--panel-2); stroke: var(--line-3); stroke-width: 1.2; rx: 8; transition: stroke .2s; }
 .blk.hot rect.box { stroke: var(--accent); filter: drop-shadow(0 0 6px color-mix(in srgb, var(--accent) 50%, transparent)); }
 .blk.sat rect.box { stroke: var(--c-sat); filter: drop-shadow(0 0 6px color-mix(in srgb, var(--c-sat) 55%, transparent)); }
