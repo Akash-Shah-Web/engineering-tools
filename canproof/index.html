@@ -50,7 +50,7 @@ header.top {
 .ctl.primary:hover { filter: brightness(1.08); }
 .ctl.on { border-color: var(--accent); color: var(--accent); }
 select.ctl { padding-right: 6px; }
-#example { max-width: 300px; text-overflow: ellipsis; }
+#example { max-width: 260px; text-overflow: ellipsis; }
 .ctl svg { width: 14px; height: 14px; flex: none; }
 .ctl label { color: var(--muted); font-size: 11.5px; }
 .iconbtn { width: 32px; justify-content: center; padding: 0; }
@@ -247,6 +247,8 @@ footer summary { cursor: pointer; color: var(--text); font-weight: 600; }
   .stressbar input[type=range] { width: 120px; }
 }
 @media (prefers-reduced-motion: reduce) { * { transition: none !important; animation: none !important; } }
+@media (min-width: 1280px) { header.top .hgroup { flex-wrap: nowrap; } }
+@media (max-width: 1560px) { .brand small { display: none; } }
 </style>
 </head>
 <body>
@@ -265,11 +267,11 @@ footer summary { cursor: pointer; color: var(--text); font-weight: 600; }
       <select id="bitrate" style="background:none;border:0;padding:0;outline:none">
         <option value="125000">125 kbit/s</option><option value="250000">250 kbit/s</option><option value="500000" selected>500 kbit/s</option><option value="1000000">1 Mbit/s</option>
       </select></span>
-    <span class="ctl hide-sm" title="Analysis method"><label>Analysis</label>
+    <span class="ctl hide-sm" title="Analysis method: revised Davis et al. 2007 exact test (default), its sufficient test, or the original optimistic analysis for comparison only"><label>Analysis</label>
       <select id="method" style="background:none;border:0;padding:0;outline:none">
-        <option value="davis" selected>Davis et al. 2007 (exact)</option>
-        <option value="sufficient">Davis 2007 sufficient (eq. 16)</option>
-        <option value="tindell">Original Tindell — UNSAFE, comparison only</option>
+        <option value="davis" selected>Davis 2007 · exact</option>
+        <option value="sufficient">Davis 2007 · sufficient</option>
+        <option value="tindell">Original (Tindell) · UNSAFE</option>
       </select></span>
     <button class="ctl" id="btnStress" title="Stress mode: scale load, jitter and priorities"><svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><path d="M13 2 4 14h7l-1 8 9-12h-7z"/></svg> Stress</button>
     <button class="ctl primary" id="btnTour" title="Guided demo"><svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><path d="M7 4v16l13-8z" fill="currentColor"/></svg> Guided demo</button>
