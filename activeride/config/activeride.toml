@@ -1,0 +1,148 @@
+# =============================================================================
+# ActiveRide — single editable parameter file
+# =============================================================================
+# EVERY numeric value in this file is a MODELLING ASSUMPTION unless the comment
+# says otherwise. Vehicle values describe a generic mid-size passenger car and
+# are NOT identified from any real vehicle. Sensor and actuator values are
+# plausible engineering choices, not datasheet values for a specific product.
+# Units are SI throughout (m, kg, s, N, rad).
+#
+# Sign conventions (shared by the 7-DOF model and the MuJoCo plant):
+#   x forward, y left, z up.
+#   heave  zs : body CG vertical displacement from static equilibrium, + up
+#   pitch  th : rotation about +y. Positive pitch moves the FRONT DOWN
+#               (body corner height  z_ci = zs - x_i*th + y_i*ph)
+#   roll   ph : rotation about +x. Positive roll moves the LEFT side UP
+#   wheel order: 0 = front-left, 1 = front-right, 2 = rear-left, 3 = rear-right
+#   actuator force u_i > 0 pushes body UP and wheel DOWN.
+# =============================================================================
+
+[vehicle]                      # ASSUMPTION: generic mid-size sedan
+sprung_mass      = 1400.0      # kg
+Ixx_roll         = 460.0       # kg m^2 roll inertia about CG
+Iyy_pitch        = 2100.0      # kg m^2 pitch inertia about CG
+a_front          = 1.20        # m, CG to front axle
+b_rear           = 1.50        # m, CG to rear axle
+track_front      = 1.56        # m
+track_rear       = 1.56        # m
+unsprung_mass    = [40.0, 40.0, 36.0, 36.0]          # kg per corner (FL, FR, RL, RR)
+spring_rate      = [30000.0, 30000.0, 26000.0, 26000.0]  # N/m wheel rate
+damper_rate      = [2400.0, 2400.0, 2100.0, 2100.0]      # N s/m wheel rate (linear)
+tyre_stiffness   = [250000.0, 250000.0, 250000.0, 250000.0] # N/m vertical
+tyre_damping     = [100.0, 100.0, 100.0, 100.0]       # N s/m vertical
+tyre_radius      = 0.32        # m, free radius (visual + wheel spin only)
+driver_seat_x    = 0.10        # m, seat reference point ahead of CG
+driver_seat_y    = 0.38        # m, seat reference point left of CG (LHD car)
+# Tyre lift-off (force cannot become tensile). Used in the MuJoCo plant only;
+# the analytical 7-DOF model is linear and always keeps contact.
+tyre_liftoff     = true
+# Tyre enveloping: moving-average length applied to the measured profile to
+# approximate the tyre contact patch (ASSUMPTION, typical 0.2-0.3 m).
+tyre_envelope_m  = 0.25
+
+[actuator]                     # ASSUMPTION: electro-hydraulic/linear-motor class
+max_force        = 2500.0      # N, saturation per corner
+max_rate         = 60000.0     # N/s, force slew-rate limit
+bandwidth_hz     = 12.0        # first-order force-tracking bandwidth
+# The passive damper above remains in parallel with the actuator.
+
+[sensors]                      # ASSUMPTION: automotive-grade MEMS/LVDT noise
+# white measurement noise standard deviations at the control rate
+body_accel_std     = 0.05      # m/s^2, four vertical accelerometers at the body corners
+gyro_std           = 0.003     # rad/s, pitch and roll rate gyros
+deflection_std     = 0.0005    # m, four suspension stroke sensors
+preview_height_std = 0.002     # m, look-ahead road sensor (lidar/camera) noise
+preview_distance   = 6.0       # m of road ahead visible to the preview sensor
+preview_smoothing_m = 1.0      # m, moving-average applied by the controller to the noisy look-ahead heights
+
+[control]
+dt               = 0.001       # s, controller sample time (1 kHz ECU)
+skyhook_c        = 4000.0      # N s/m, skyhook coefficient per corner
+# LQR performance weights (dimensionless after normalisation by the scales below)
+w_heave_acc      = 1.0         # weight on (body heave acceleration / 1 m/s^2)^2
+w_pitch_acc      = 1.0         # weight on (pitch acceleration / 1 rad/s^2)^2
+w_roll_acc       = 1.0         # weight on (roll acceleration / 1 rad/s^2)^2
+w_travel         = 2.0e3       # weight on (suspension stroke / 1 m)^2 per corner
+w_tyre           = 2.0e4       # weight on (tyre deflection / 1 m)^2 per corner
+w_force          = 1.0e-7      # weight on (actuator force / 1 N)^2 per corner
+road_highpass_hz = 0.05        # temporal corner of the shaping filter road model
+# Kalman filter process noise: road vertical velocity intensity (m/s)^2 * s
+road_velocity_psd = 0.02
+actuator_process_std = 5.0     # N, unmodelled actuator force error
+
+[simulation]
+plant_dt         = 0.00025     # s, MuJoCo time step (semi-implicit Euler, "implicitfast")
+log_rate_hz      = 500.0       # Hz, logged channels for metrics/figures (>=2x the 80 Hz ISO band)
+viewer_rate_hz   = 50.0        # Hz, decimated channels exported to the web viewer
+seed             = 20261105
+
+# -----------------------------------------------------------------------------
+# Scenarios. kind = "measured" uses LiRA-CD P79 wheel-path profiles (MEASURED).
+# kind = "synthetic" uses analytic shapes (SYNTHETIC — clearly not measured).
+# -----------------------------------------------------------------------------
+[[scenario]]
+id      = "m13_A"
+label   = "Motorway M13, section A (km 16.55-17.15)"
+kind    = "measured"
+section = "A"
+speed_kmh = 90.0
+length_m  = 600.0
+
+[[scenario]]
+id      = "m13_C"
+label   = "Motorway M13, section C (km 18.55-19.06)"
+kind    = "measured"
+section = "C"
+speed_kmh = 90.0
+length_m  = 505.0
+
+[[scenario]]
+id      = "m13_B_slow"
+label   = "Motorway M13, section B (km 17.55-18.06), 60 km/h"
+kind    = "measured"
+section = "B"
+speed_kmh = 60.0
+length_m  = 505.0
+
+[[scenario]]
+id      = "speed_bump"
+label   = "SYNTHETIC speed bump (both wheel paths)"
+kind    = "synthetic"
+shape   = "bump"
+height  = 0.07        # m
+length  = 0.9         # m, half-sine footprint along travel
+side    = "both"
+speed_kmh = 25.0
+length_m  = 40.0
+
+[[scenario]]
+id      = "pothole"
+label   = "SYNTHETIC pothole (left wheel path)"
+kind    = "synthetic"
+shape   = "pothole"
+height  = -0.04       # m (negative = depression)
+length  = 0.6         # m, cosine-shaped dish
+side    = "left"
+speed_kmh = 40.0
+length_m  = 40.0
+
+[[scenario]]
+id      = "one_sided_bump"
+label   = "SYNTHETIC one-sided bump (right wheel path)"
+kind    = "synthetic"
+shape   = "bump"
+height  = 0.05
+length  = 1.2
+side    = "right"
+speed_kmh = 40.0
+length_m  = 40.0
+
+[montecarlo]
+samples          = 60          # per controller
+scenario         = "m13_A"
+duration_s       = 12.0        # first part of the scenario, to keep runtime modest
+mass_sd          = 0.10        # relative 1-sigma, sprung mass (and inertias scaled with it)
+spring_sd        = 0.10        # relative, suspension springs
+damper_sd        = 0.15        # relative, passive dampers
+tyre_sd          = 0.10        # relative, tyre stiffness
+sensor_noise_scale_max = 3.0   # sensor noise multiplied by U(1, max)
